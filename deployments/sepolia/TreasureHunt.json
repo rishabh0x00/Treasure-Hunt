@@ -1,0 +1,997 @@
+{
+  "address": "0x22c9a2433DC380175335B749fc333434e4cfbca6",
+  "abi": [
+    {
+      "inputs": [
+        {
+          "internalType": "address",
+          "name": "_vrfV2PlusWrapper",
+          "type": "address"
+        },
+        {
+          "internalType": "uint16",
+          "name": "_requestConfirmation",
+          "type": "uint16"
+        },
+        {
+          "internalType": "uint256",
+          "name": "_gameDuration",
+          "type": "uint256"
+        },
+        {
+          "internalType": "uint256",
+          "name": "_inactiveGamesWithdrawTVLIndex",
+          "type": "uint256"
+        }
+      ],
+      "stateMutability": "nonpayable",
+      "type": "constructor"
+    },
+    {
+      "inputs": [],
+      "name": "CannotStartNewGame",
+      "type": "error"
+    },
+    {
+      "inputs": [],
+      "name": "ErrorMovingTreasure",
+      "type": "error"
+    },
+    {
+      "inputs": [
+        {
+          "internalType": "uint256",
+          "name": "currentGameIndex",
+          "type": "uint256"
+        }
+      ],
+      "name": "GameCannotBeExpired",
+      "type": "error"
+    },
+    {
+      "inputs": [
+        {
+          "internalType": "uint256",
+          "name": "currentGameIndex",
+          "type": "uint256"
+        }
+      ],
+      "name": "GameNotActive",
+      "type": "error"
+    },
+    {
+      "inputs": [
+        {
+          "internalType": "uint256",
+          "name": "currentGameIndex",
+          "type": "uint256"
+        }
+      ],
+      "name": "GameNotExpired",
+      "type": "error"
+    },
+    {
+      "inputs": [],
+      "name": "InvalidExpiry",
+      "type": "error"
+    },
+    {
+      "inputs": [
+        {
+          "internalType": "enum TreasureHunt.Directions",
+          "name": "move",
+          "type": "uint8"
+        },
+        {
+          "internalType": "uint8",
+          "name": "currentPosition",
+          "type": "uint8"
+        }
+      ],
+      "name": "InvalidMove",
+      "type": "error"
+    },
+    {
+      "inputs": [],
+      "name": "InvalidParticipationFee",
+      "type": "error"
+    },
+    {
+      "inputs": [],
+      "name": "InvalidTurnDuration",
+      "type": "error"
+    },
+    {
+      "inputs": [],
+      "name": "NoInactiveGameWithTVLToWithdraw",
+      "type": "error"
+    },
+    {
+      "inputs": [
+        {
+          "internalType": "uint256",
+          "name": "currentGameIndex",
+          "type": "uint256"
+        }
+      ],
+      "name": "NotEnoughGamesPlayedYetToWithdrawTVL",
+      "type": "error"
+    },
+    {
+      "inputs": [],
+      "name": "NumberMustBeLessThanHundered",
+      "type": "error"
+    },
+    {
+      "inputs": [],
+      "name": "OnlyDeployerCanCall",
+      "type": "error"
+    },
+    {
+      "inputs": [
+        {
+          "internalType": "address",
+          "name": "have",
+          "type": "address"
+        },
+        {
+          "internalType": "address",
+          "name": "want",
+          "type": "address"
+        }
+      ],
+      "name": "OnlyVRFWrapperCanFulfill",
+      "type": "error"
+    },
+    {
+      "inputs": [
+        {
+          "internalType": "uint256",
+          "name": "requestId",
+          "type": "uint256"
+        }
+      ],
+      "name": "RequestNotFound",
+      "type": "error"
+    },
+    {
+      "inputs": [
+        {
+          "internalType": "address",
+          "name": "user",
+          "type": "address"
+        }
+      ],
+      "name": "UserAlreadyRegistered",
+      "type": "error"
+    },
+    {
+      "inputs": [],
+      "name": "WaitForNextTurn",
+      "type": "error"
+    },
+    {
+      "inputs": [],
+      "name": "ZeroAmountToWithdraw",
+      "type": "error"
+    },
+    {
+      "anonymous": false,
+      "inputs": [
+        {
+          "indexed": true,
+          "internalType": "address",
+          "name": "user",
+          "type": "address"
+        }
+      ],
+      "name": "FundsWithdrawn",
+      "type": "event"
+    },
+    {
+      "anonymous": false,
+      "inputs": [
+        {
+          "indexed": true,
+          "internalType": "uint256",
+          "name": "currentGameIndex",
+          "type": "uint256"
+        }
+      ],
+      "name": "GameExpired",
+      "type": "event"
+    },
+    {
+      "anonymous": false,
+      "inputs": [
+        {
+          "indexed": true,
+          "internalType": "uint256",
+          "name": "currentGameIndex",
+          "type": "uint256"
+        },
+        {
+          "indexed": false,
+          "internalType": "uint256",
+          "name": "initialTVL",
+          "type": "uint256"
+        },
+        {
+          "indexed": false,
+          "internalType": "uint8",
+          "name": "initialTreasurePosition",
+          "type": "uint8"
+        }
+      ],
+      "name": "GameStarted",
+      "type": "event"
+    },
+    {
+      "anonymous": false,
+      "inputs": [
+        {
+          "indexed": true,
+          "internalType": "address",
+          "name": "winner",
+          "type": "address"
+        },
+        {
+          "indexed": false,
+          "internalType": "uint256",
+          "name": "prize",
+          "type": "uint256"
+        },
+        {
+          "indexed": false,
+          "internalType": "uint256",
+          "name": "currentGameIndex",
+          "type": "uint256"
+        }
+      ],
+      "name": "GameWon",
+      "type": "event"
+    },
+    {
+      "anonymous": false,
+      "inputs": [
+        {
+          "indexed": true,
+          "internalType": "address",
+          "name": "withdrawer",
+          "type": "address"
+        },
+        {
+          "indexed": false,
+          "internalType": "uint256",
+          "name": "amount",
+          "type": "uint256"
+        }
+      ],
+      "name": "InactiveGamesTVLWithdrawn",
+      "type": "event"
+    },
+    {
+      "anonymous": false,
+      "inputs": [
+        {
+          "indexed": false,
+          "internalType": "address",
+          "name": "player",
+          "type": "address"
+        },
+        {
+          "indexed": false,
+          "internalType": "uint256",
+          "name": "currentGameIndex",
+          "type": "uint256"
+        },
+        {
+          "indexed": false,
+          "internalType": "uint8",
+          "name": "newPosition",
+          "type": "uint8"
+        }
+      ],
+      "name": "PlayerMoved",
+      "type": "event"
+    },
+    {
+      "anonymous": false,
+      "inputs": [
+        {
+          "indexed": true,
+          "internalType": "address",
+          "name": "player",
+          "type": "address"
+        },
+        {
+          "indexed": false,
+          "internalType": "uint256",
+          "name": "currentGameIndex",
+          "type": "uint256"
+        }
+      ],
+      "name": "PlayerRegistered",
+      "type": "event"
+    },
+    {
+      "anonymous": false,
+      "inputs": [
+        {
+          "indexed": true,
+          "internalType": "address",
+          "name": "sender",
+          "type": "address"
+        },
+        {
+          "indexed": false,
+          "internalType": "uint256",
+          "name": "amount",
+          "type": "uint256"
+        }
+      ],
+      "name": "Received",
+      "type": "event"
+    },
+    {
+      "anonymous": false,
+      "inputs": [
+        {
+          "indexed": false,
+          "internalType": "uint256",
+          "name": "requestId",
+          "type": "uint256"
+        },
+        {
+          "indexed": false,
+          "internalType": "uint256[]",
+          "name": "randomWords",
+          "type": "uint256[]"
+        }
+      ],
+      "name": "RequestFulfilled",
+      "type": "event"
+    },
+    {
+      "anonymous": false,
+      "inputs": [
+        {
+          "indexed": false,
+          "internalType": "uint256",
+          "name": "requestId",
+          "type": "uint256"
+        }
+      ],
+      "name": "RequestSent",
+      "type": "event"
+    },
+    {
+      "anonymous": false,
+      "inputs": [
+        {
+          "indexed": true,
+          "internalType": "uint8",
+          "name": "newPosition",
+          "type": "uint8"
+        },
+        {
+          "indexed": false,
+          "internalType": "uint256",
+          "name": "currentGameIndex",
+          "type": "uint256"
+        }
+      ],
+      "name": "TreasureMoved",
+      "type": "event"
+    },
+    {
+      "inputs": [],
+      "name": "DEPLOYER",
+      "outputs": [
+        {
+          "internalType": "address",
+          "name": "",
+          "type": "address"
+        }
+      ],
+      "stateMutability": "view",
+      "type": "function"
+    },
+    {
+      "inputs": [],
+      "name": "GAME_DURATION",
+      "outputs": [
+        {
+          "internalType": "uint256",
+          "name": "",
+          "type": "uint256"
+        }
+      ],
+      "stateMutability": "view",
+      "type": "function"
+    },
+    {
+      "inputs": [],
+      "name": "GRID_SIZE",
+      "outputs": [
+        {
+          "internalType": "uint8",
+          "name": "",
+          "type": "uint8"
+        }
+      ],
+      "stateMutability": "view",
+      "type": "function"
+    },
+    {
+      "inputs": [],
+      "name": "MIN_IDLE_GAMES",
+      "outputs": [
+        {
+          "internalType": "uint256",
+          "name": "",
+          "type": "uint256"
+        }
+      ],
+      "stateMutability": "view",
+      "type": "function"
+    },
+    {
+      "inputs": [],
+      "name": "PARTICIPATION_FEE",
+      "outputs": [
+        {
+          "internalType": "uint256",
+          "name": "",
+          "type": "uint256"
+        }
+      ],
+      "stateMutability": "view",
+      "type": "function"
+    },
+    {
+      "inputs": [],
+      "name": "currentGameIndex",
+      "outputs": [
+        {
+          "internalType": "uint256",
+          "name": "",
+          "type": "uint256"
+        }
+      ],
+      "stateMutability": "view",
+      "type": "function"
+    },
+    {
+      "inputs": [],
+      "name": "expireCurrentGame",
+      "outputs": [],
+      "stateMutability": "nonpayable",
+      "type": "function"
+    },
+    {
+      "inputs": [
+        {
+          "internalType": "uint256",
+          "name": "gameIndex",
+          "type": "uint256"
+        }
+      ],
+      "name": "games",
+      "outputs": [
+        {
+          "internalType": "uint8",
+          "name": "treasurePosition",
+          "type": "uint8"
+        },
+        {
+          "internalType": "bool",
+          "name": "treasureMoving",
+          "type": "bool"
+        },
+        {
+          "internalType": "uint40",
+          "name": "startTime",
+          "type": "uint40"
+        },
+        {
+          "internalType": "address",
+          "name": "winner",
+          "type": "address"
+        },
+        {
+          "internalType": "uint256",
+          "name": "tvl",
+          "type": "uint256"
+        },
+        {
+          "internalType": "uint256",
+          "name": "playerCount",
+          "type": "uint256"
+        }
+      ],
+      "stateMutability": "view",
+      "type": "function"
+    },
+    {
+      "inputs": [],
+      "name": "getBalance",
+      "outputs": [
+        {
+          "internalType": "uint256",
+          "name": "",
+          "type": "uint256"
+        }
+      ],
+      "stateMutability": "view",
+      "type": "function"
+    },
+    {
+      "inputs": [],
+      "name": "getLinkToken",
+      "outputs": [
+        {
+          "internalType": "contract LinkTokenInterface",
+          "name": "",
+          "type": "address"
+        }
+      ],
+      "stateMutability": "view",
+      "type": "function"
+    },
+    {
+      "inputs": [],
+      "name": "i_vrfV2PlusWrapper",
+      "outputs": [
+        {
+          "internalType": "contract IVRFV2PlusWrapper",
+          "name": "",
+          "type": "address"
+        }
+      ],
+      "stateMutability": "view",
+      "type": "function"
+    },
+    {
+      "inputs": [],
+      "name": "participate",
+      "outputs": [],
+      "stateMutability": "payable",
+      "type": "function"
+    },
+    {
+      "inputs": [
+        {
+          "internalType": "enum TreasureHunt.Directions",
+          "name": "move",
+          "type": "uint8"
+        }
+      ],
+      "name": "play",
+      "outputs": [],
+      "stateMutability": "payable",
+      "type": "function"
+    },
+    {
+      "inputs": [
+        {
+          "internalType": "uint256",
+          "name": "gameIndex",
+          "type": "uint256"
+        },
+        {
+          "internalType": "address",
+          "name": "userAddress",
+          "type": "address"
+        }
+      ],
+      "name": "players",
+      "outputs": [
+        {
+          "internalType": "uint8",
+          "name": "position",
+          "type": "uint8"
+        },
+        {
+          "internalType": "bool",
+          "name": "isActive",
+          "type": "bool"
+        }
+      ],
+      "stateMutability": "view",
+      "type": "function"
+    },
+    {
+      "inputs": [
+        {
+          "internalType": "uint256",
+          "name": "_requestId",
+          "type": "uint256"
+        },
+        {
+          "internalType": "uint256[]",
+          "name": "_randomWords",
+          "type": "uint256[]"
+        }
+      ],
+      "name": "rawFulfillRandomWords",
+      "outputs": [],
+      "stateMutability": "nonpayable",
+      "type": "function"
+    },
+    {
+      "inputs": [],
+      "name": "request",
+      "outputs": [
+        {
+          "internalType": "address",
+          "name": "player",
+          "type": "address"
+        },
+        {
+          "internalType": "uint8",
+          "name": "newPosition",
+          "type": "uint8"
+        },
+        {
+          "internalType": "enum TreasureHunt.TreasureMove",
+          "name": "condition",
+          "type": "uint8"
+        },
+        {
+          "internalType": "bool",
+          "name": "newGame",
+          "type": "bool"
+        },
+        {
+          "internalType": "uint256",
+          "name": "requestId",
+          "type": "uint256"
+        }
+      ],
+      "stateMutability": "view",
+      "type": "function"
+    },
+    {
+      "inputs": [
+        {
+          "internalType": "uint256",
+          "name": "gameIndex",
+          "type": "uint256"
+        }
+      ],
+      "name": "withdrawFunds",
+      "outputs": [],
+      "stateMutability": "nonpayable",
+      "type": "function"
+    },
+    {
+      "inputs": [],
+      "name": "withdrawInactiveGamesTVL",
+      "outputs": [],
+      "stateMutability": "nonpayable",
+      "type": "function"
+    }
+  ],
+  "transactionHash": "0x812e1138b6583e2f3f3f7ff97052438842107a643a943adb6291fc12505883f6",
+  "receipt": {
+    "to": "0x4e59b44847b379578588920cA78FbF26c0B4956C",
+    "from": "0xD2344ce2CFEaD1cBE24e33E8301411d62946A1d2",
+    "contractAddress": null,
+    "transactionIndex": 40,
+    "gasUsed": "1831349",
+    "logsBloom": "0x00000000000000000000000000000000000000080000000000000000000000000000000000000000000000000000000000000000000000000000000000040000000000000000000000010000000000000000000000040000000000280000000000000000000020000000000000000000000000000000000000000008000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000040000000000000000000000000000000000000000000000000000000000000000000",
+    "blockHash": "0x833830939f9a4367551c1e813786555267b9786098b6ffa55a4eea7f1437558f",
+    "transactionHash": "0x812e1138b6583e2f3f3f7ff97052438842107a643a943adb6291fc12505883f6",
+    "logs": [
+      {
+        "transactionIndex": 40,
+        "blockNumber": 6618420,
+        "transactionHash": "0x812e1138b6583e2f3f3f7ff97052438842107a643a943adb6291fc12505883f6",
+        "address": "0x22c9a2433DC380175335B749fc333434e4cfbca6",
+        "topics": [
+          "0x5ebe9e4b5ec73754b320dc4b775c3350188dd025d94a21e5dd5a987dba556da2",
+          "0x0000000000000000000000000000000000000000000000000000000000000001"
+        ],
+        "data": "0x00000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000047",
+        "logIndex": 93,
+        "blockHash": "0x833830939f9a4367551c1e813786555267b9786098b6ffa55a4eea7f1437558f"
+      }
+    ],
+    "blockNumber": 6618420,
+    "cumulativeGasUsed": "8879671",
+    "status": 1,
+    "byzantium": true
+  },
+  "args": [
+    "0x195f15F2d49d693cE265b4fB0fdDbE15b1850Cc1",
+    3,
+    86400,
+    5
+  ],
+  "numDeployments": 1,
+  "solcInputHash": "baa09e3196c3c7ad55b8c82fd2b43726",
+  "metadata": "{\"compiler\":{\"version\":\"0.8.24+commit.e11b9ed9\"},\"language\":\"Solidity\",\"output\":{\"abi\":[{\"inputs\":[{\"internalType\":\"address\",\"name\":\"_vrfV2PlusWrapper\",\"type\":\"address\"},{\"internalType\":\"uint16\",\"name\":\"_requestConfirmation\",\"type\":\"uint16\"},{\"internalType\":\"uint256\",\"name\":\"_gameDuration\",\"type\":\"uint256\"},{\"internalType\":\"uint256\",\"name\":\"_inactiveGamesWithdrawTVLIndex\",\"type\":\"uint256\"}],\"stateMutability\":\"nonpayable\",\"type\":\"constructor\"},{\"inputs\":[],\"name\":\"CannotStartNewGame\",\"type\":\"error\"},{\"inputs\":[],\"name\":\"ErrorMovingTreasure\",\"type\":\"error\"},{\"inputs\":[{\"internalType\":\"uint256\",\"name\":\"currentGameIndex\",\"type\":\"uint256\"}],\"name\":\"GameCannotBeExpired\",\"type\":\"error\"},{\"inputs\":[{\"internalType\":\"uint256\",\"name\":\"currentGameIndex\",\"type\":\"uint256\"}],\"name\":\"GameNotActive\",\"type\":\"error\"},{\"inputs\":[{\"internalType\":\"uint256\",\"name\":\"currentGameIndex\",\"type\":\"uint256\"}],\"name\":\"GameNotExpired\",\"type\":\"error\"},{\"inputs\":[],\"name\":\"InvalidExpiry\",\"type\":\"error\"},{\"inputs\":[{\"internalType\":\"enum TreasureHunt.Directions\",\"name\":\"move\",\"type\":\"uint8\"},{\"internalType\":\"uint8\",\"name\":\"currentPosition\",\"type\":\"uint8\"}],\"name\":\"InvalidMove\",\"type\":\"error\"},{\"inputs\":[],\"name\":\"InvalidParticipationFee\",\"type\":\"error\"},{\"inputs\":[],\"name\":\"InvalidTurnDuration\",\"type\":\"error\"},{\"inputs\":[],\"name\":\"NoInactiveGameWithTVLToWithdraw\",\"type\":\"error\"},{\"inputs\":[{\"internalType\":\"uint256\",\"name\":\"currentGameIndex\",\"type\":\"uint256\"}],\"name\":\"NotEnoughGamesPlayedYetToWithdrawTVL\",\"type\":\"error\"},{\"inputs\":[],\"name\":\"NumberMustBeLessThanHundered\",\"type\":\"error\"},{\"inputs\":[],\"name\":\"OnlyDeployerCanCall\",\"type\":\"error\"},{\"inputs\":[{\"internalType\":\"address\",\"name\":\"have\",\"type\":\"address\"},{\"internalType\":\"address\",\"name\":\"want\",\"type\":\"address\"}],\"name\":\"OnlyVRFWrapperCanFulfill\",\"type\":\"error\"},{\"inputs\":[{\"internalType\":\"uint256\",\"name\":\"requestId\",\"type\":\"uint256\"}],\"name\":\"RequestNotFound\",\"type\":\"error\"},{\"inputs\":[{\"internalType\":\"address\",\"name\":\"user\",\"type\":\"address\"}],\"name\":\"UserAlreadyRegistered\",\"type\":\"error\"},{\"inputs\":[],\"name\":\"WaitForNextTurn\",\"type\":\"error\"},{\"inputs\":[],\"name\":\"ZeroAmountToWithdraw\",\"type\":\"error\"},{\"anonymous\":false,\"inputs\":[{\"indexed\":true,\"internalType\":\"address\",\"name\":\"user\",\"type\":\"address\"}],\"name\":\"FundsWithdrawn\",\"type\":\"event\"},{\"anonymous\":false,\"inputs\":[{\"indexed\":true,\"internalType\":\"uint256\",\"name\":\"currentGameIndex\",\"type\":\"uint256\"}],\"name\":\"GameExpired\",\"type\":\"event\"},{\"anonymous\":false,\"inputs\":[{\"indexed\":true,\"internalType\":\"uint256\",\"name\":\"currentGameIndex\",\"type\":\"uint256\"},{\"indexed\":false,\"internalType\":\"uint256\",\"name\":\"initialTVL\",\"type\":\"uint256\"},{\"indexed\":false,\"internalType\":\"uint8\",\"name\":\"initialTreasurePosition\",\"type\":\"uint8\"}],\"name\":\"GameStarted\",\"type\":\"event\"},{\"anonymous\":false,\"inputs\":[{\"indexed\":true,\"internalType\":\"address\",\"name\":\"winner\",\"type\":\"address\"},{\"indexed\":false,\"internalType\":\"uint256\",\"name\":\"prize\",\"type\":\"uint256\"},{\"indexed\":false,\"internalType\":\"uint256\",\"name\":\"currentGameIndex\",\"type\":\"uint256\"}],\"name\":\"GameWon\",\"type\":\"event\"},{\"anonymous\":false,\"inputs\":[{\"indexed\":true,\"internalType\":\"address\",\"name\":\"withdrawer\",\"type\":\"address\"},{\"indexed\":false,\"internalType\":\"uint256\",\"name\":\"amount\",\"type\":\"uint256\"}],\"name\":\"InactiveGamesTVLWithdrawn\",\"type\":\"event\"},{\"anonymous\":false,\"inputs\":[{\"indexed\":false,\"internalType\":\"address\",\"name\":\"player\",\"type\":\"address\"},{\"indexed\":false,\"internalType\":\"uint256\",\"name\":\"currentGameIndex\",\"type\":\"uint256\"},{\"indexed\":false,\"internalType\":\"uint8\",\"name\":\"newPosition\",\"type\":\"uint8\"}],\"name\":\"PlayerMoved\",\"type\":\"event\"},{\"anonymous\":false,\"inputs\":[{\"indexed\":true,\"internalType\":\"address\",\"name\":\"player\",\"type\":\"address\"},{\"indexed\":false,\"internalType\":\"uint256\",\"name\":\"currentGameIndex\",\"type\":\"uint256\"}],\"name\":\"PlayerRegistered\",\"type\":\"event\"},{\"anonymous\":false,\"inputs\":[{\"indexed\":true,\"internalType\":\"address\",\"name\":\"sender\",\"type\":\"address\"},{\"indexed\":false,\"internalType\":\"uint256\",\"name\":\"amount\",\"type\":\"uint256\"}],\"name\":\"Received\",\"type\":\"event\"},{\"anonymous\":false,\"inputs\":[{\"indexed\":false,\"internalType\":\"uint256\",\"name\":\"requestId\",\"type\":\"uint256\"},{\"indexed\":false,\"internalType\":\"uint256[]\",\"name\":\"randomWords\",\"type\":\"uint256[]\"}],\"name\":\"RequestFulfilled\",\"type\":\"event\"},{\"anonymous\":false,\"inputs\":[{\"indexed\":false,\"internalType\":\"uint256\",\"name\":\"requestId\",\"type\":\"uint256\"}],\"name\":\"RequestSent\",\"type\":\"event\"},{\"anonymous\":false,\"inputs\":[{\"indexed\":true,\"internalType\":\"uint8\",\"name\":\"newPosition\",\"type\":\"uint8\"},{\"indexed\":false,\"internalType\":\"uint256\",\"name\":\"currentGameIndex\",\"type\":\"uint256\"}],\"name\":\"TreasureMoved\",\"type\":\"event\"},{\"inputs\":[],\"name\":\"DEPLOYER\",\"outputs\":[{\"internalType\":\"address\",\"name\":\"\",\"type\":\"address\"}],\"stateMutability\":\"view\",\"type\":\"function\"},{\"inputs\":[],\"name\":\"GAME_DURATION\",\"outputs\":[{\"internalType\":\"uint256\",\"name\":\"\",\"type\":\"uint256\"}],\"stateMutability\":\"view\",\"type\":\"function\"},{\"inputs\":[],\"name\":\"GRID_SIZE\",\"outputs\":[{\"internalType\":\"uint8\",\"name\":\"\",\"type\":\"uint8\"}],\"stateMutability\":\"view\",\"type\":\"function\"},{\"inputs\":[],\"name\":\"MIN_IDLE_GAMES\",\"outputs\":[{\"internalType\":\"uint256\",\"name\":\"\",\"type\":\"uint256\"}],\"stateMutability\":\"view\",\"type\":\"function\"},{\"inputs\":[],\"name\":\"PARTICIPATION_FEE\",\"outputs\":[{\"internalType\":\"uint256\",\"name\":\"\",\"type\":\"uint256\"}],\"stateMutability\":\"view\",\"type\":\"function\"},{\"inputs\":[],\"name\":\"currentGameIndex\",\"outputs\":[{\"internalType\":\"uint256\",\"name\":\"\",\"type\":\"uint256\"}],\"stateMutability\":\"view\",\"type\":\"function\"},{\"inputs\":[],\"name\":\"expireCurrentGame\",\"outputs\":[],\"stateMutability\":\"nonpayable\",\"type\":\"function\"},{\"inputs\":[{\"internalType\":\"uint256\",\"name\":\"gameIndex\",\"type\":\"uint256\"}],\"name\":\"games\",\"outputs\":[{\"internalType\":\"uint8\",\"name\":\"treasurePosition\",\"type\":\"uint8\"},{\"internalType\":\"bool\",\"name\":\"treasureMoving\",\"type\":\"bool\"},{\"internalType\":\"uint40\",\"name\":\"startTime\",\"type\":\"uint40\"},{\"internalType\":\"address\",\"name\":\"winner\",\"type\":\"address\"},{\"internalType\":\"uint256\",\"name\":\"tvl\",\"type\":\"uint256\"},{\"internalType\":\"uint256\",\"name\":\"playerCount\",\"type\":\"uint256\"}],\"stateMutability\":\"view\",\"type\":\"function\"},{\"inputs\":[],\"name\":\"getBalance\",\"outputs\":[{\"internalType\":\"uint256\",\"name\":\"\",\"type\":\"uint256\"}],\"stateMutability\":\"view\",\"type\":\"function\"},{\"inputs\":[],\"name\":\"getLinkToken\",\"outputs\":[{\"internalType\":\"contract LinkTokenInterface\",\"name\":\"\",\"type\":\"address\"}],\"stateMutability\":\"view\",\"type\":\"function\"},{\"inputs\":[],\"name\":\"i_vrfV2PlusWrapper\",\"outputs\":[{\"internalType\":\"contract IVRFV2PlusWrapper\",\"name\":\"\",\"type\":\"address\"}],\"stateMutability\":\"view\",\"type\":\"function\"},{\"inputs\":[],\"name\":\"participate\",\"outputs\":[],\"stateMutability\":\"payable\",\"type\":\"function\"},{\"inputs\":[{\"internalType\":\"enum TreasureHunt.Directions\",\"name\":\"move\",\"type\":\"uint8\"}],\"name\":\"play\",\"outputs\":[],\"stateMutability\":\"payable\",\"type\":\"function\"},{\"inputs\":[{\"internalType\":\"uint256\",\"name\":\"gameIndex\",\"type\":\"uint256\"},{\"internalType\":\"address\",\"name\":\"userAddress\",\"type\":\"address\"}],\"name\":\"players\",\"outputs\":[{\"internalType\":\"uint8\",\"name\":\"position\",\"type\":\"uint8\"},{\"internalType\":\"bool\",\"name\":\"isActive\",\"type\":\"bool\"}],\"stateMutability\":\"view\",\"type\":\"function\"},{\"inputs\":[{\"internalType\":\"uint256\",\"name\":\"_requestId\",\"type\":\"uint256\"},{\"internalType\":\"uint256[]\",\"name\":\"_randomWords\",\"type\":\"uint256[]\"}],\"name\":\"rawFulfillRandomWords\",\"outputs\":[],\"stateMutability\":\"nonpayable\",\"type\":\"function\"},{\"inputs\":[],\"name\":\"request\",\"outputs\":[{\"internalType\":\"address\",\"name\":\"player\",\"type\":\"address\"},{\"internalType\":\"uint8\",\"name\":\"newPosition\",\"type\":\"uint8\"},{\"internalType\":\"enum TreasureHunt.TreasureMove\",\"name\":\"condition\",\"type\":\"uint8\"},{\"internalType\":\"bool\",\"name\":\"newGame\",\"type\":\"bool\"},{\"internalType\":\"uint256\",\"name\":\"requestId\",\"type\":\"uint256\"}],\"stateMutability\":\"view\",\"type\":\"function\"},{\"inputs\":[{\"internalType\":\"uint256\",\"name\":\"gameIndex\",\"type\":\"uint256\"}],\"name\":\"withdrawFunds\",\"outputs\":[],\"stateMutability\":\"nonpayable\",\"type\":\"function\"},{\"inputs\":[],\"name\":\"withdrawInactiveGamesTVL\",\"outputs\":[],\"stateMutability\":\"nonpayable\",\"type\":\"function\"}],\"devdoc\":{\"details\":\"A game contract where players participate in a treasure hunt, with position moves and treasure location updates.\",\"kind\":\"dev\",\"methods\":{\"constructor\":{\"details\":\"Constructor to initialize the contract with minimum turn duration and expiry duration.\",\"params\":{\"_gameDuration\":\"Duration till the game lasts\",\"_inactiveGamesWithdrawTVLIndex\":\"Index count for inactive games for withdrawal of accumulated TVL\",\"_requestConfirmation\":\"The number of block confirmations the VRF service will wait to respond.\",\"_vrfV2PlusWrapper\":\"Address of chainlink vrfV2PlusWrapper contract on deployment chain\"}},\"expireCurrentGame()\":{\"details\":\"Expire the current game. Emits a {GameExpired} event. Reverts with: - `GameCannotBeExpired` if the current time is less than the game's expiry time.\"},\"participate()\":{\"details\":\"Participate in the game by paying the participation fee.\"},\"play(uint8)\":{\"details\":\"Allows a player to make a move in the specified direction. The player must wait for their turn before making a move. Updates the player's position and checks if the move results in winning the game. If the player wins, the game is ended; otherwise, the treasure's position is updated. Emits a {PlayerMoved} event when the player makes a move.\",\"params\":{\"move\":\"The direction in which the player wants to move. This should be one of the values from the `Directions` enum.\"}},\"withdrawFunds(uint256)\":{\"details\":\"Withdraw participation funds after the game has expired. Requirements: - The current game must be expired. - The caller must have a non-zero participation fee for the expired game. Emits a {FundsWithdrawn} event.\"},\"withdrawInactiveGamesTVL()\":{\"details\":\"This function checks for a series of inactive games and allows withdrawal of accumulated TVL\"}},\"title\":\"TreasureHunt\",\"version\":1},\"userdoc\":{\"kind\":\"user\",\"methods\":{\"getBalance()\":{\"notice\":\"getBalance returns the native balance of the consumer contract\"},\"getLinkToken()\":{\"notice\":\"getLinkToken returns the link token contract\"},\"participate()\":{\"notice\":\"The participant must send Ether to join the game. If the player has already registered for the current game round, the transaction will revert. Emits a {PlayerRegistered} event.\"},\"withdrawInactiveGamesTVL()\":{\"notice\":\"Allows withdrawal of TVL from inactive games\"}},\"version\":1}},\"settings\":{\"compilationTarget\":{\"contracts/TreasureHunt.sol\":\"TreasureHunt\"},\"evmVersion\":\"paris\",\"libraries\":{},\"metadata\":{\"bytecodeHash\":\"ipfs\",\"useLiteralContent\":true},\"optimizer\":{\"enabled\":true,\"runs\":1000},\"remappings\":[]},\"sources\":{\"@chainlink/contracts/src/v0.8/shared/interfaces/LinkTokenInterface.sol\":{\"content\":\"// SPDX-License-Identifier: MIT\\npragma solidity ^0.8.0;\\n\\n// solhint-disable-next-line interface-starts-with-i\\ninterface LinkTokenInterface {\\n  function allowance(address owner, address spender) external view returns (uint256 remaining);\\n\\n  function approve(address spender, uint256 value) external returns (bool success);\\n\\n  function balanceOf(address owner) external view returns (uint256 balance);\\n\\n  function decimals() external view returns (uint8 decimalPlaces);\\n\\n  function decreaseApproval(address spender, uint256 addedValue) external returns (bool success);\\n\\n  function increaseApproval(address spender, uint256 subtractedValue) external;\\n\\n  function name() external view returns (string memory tokenName);\\n\\n  function symbol() external view returns (string memory tokenSymbol);\\n\\n  function totalSupply() external view returns (uint256 totalTokensIssued);\\n\\n  function transfer(address to, uint256 value) external returns (bool success);\\n\\n  function transferAndCall(address to, uint256 value, bytes calldata data) external returns (bool success);\\n\\n  function transferFrom(address from, address to, uint256 value) external returns (bool success);\\n}\\n\",\"keccak256\":\"0xd3643595b0a46f577fff806736cbe4e3f81707c93fb1693a8a7960466e5cd321\",\"license\":\"MIT\"},\"@chainlink/contracts/src/v0.8/vrf/dev/VRFV2PlusWrapperConsumerBase.sol\":{\"content\":\"// SPDX-License-Identifier: MIT\\npragma solidity ^0.8.0;\\n\\nimport {LinkTokenInterface} from \\\"../../shared/interfaces/LinkTokenInterface.sol\\\";\\nimport {IVRFV2PlusWrapper} from \\\"./interfaces/IVRFV2PlusWrapper.sol\\\";\\n\\n/**\\n *\\n * @notice Interface for contracts using VRF randomness through the VRF V2 wrapper\\n * ********************************************************************************\\n * @dev PURPOSE\\n *\\n * @dev Create VRF V2+ requests without the need for subscription management. Rather than creating\\n * @dev and funding a VRF V2+ subscription, a user can use this wrapper to create one off requests,\\n * @dev paying up front rather than at fulfillment.\\n *\\n * @dev Since the price is determined using the gas price of the request transaction rather than\\n * @dev the fulfillment transaction, the wrapper charges an additional premium on callback gas\\n * @dev usage, in addition to some extra overhead costs associated with the VRFV2Wrapper contract.\\n * *****************************************************************************\\n * @dev USAGE\\n *\\n * @dev Calling contracts must inherit from VRFV2PlusWrapperConsumerBase. The consumer must be funded\\n * @dev with enough LINK or ether to make the request, otherwise requests will revert. To request randomness,\\n * @dev call the 'requestRandomWords' function with the desired VRF parameters. This function handles\\n * @dev paying for the request based on the current pricing.\\n *\\n * @dev Consumers must implement the fullfillRandomWords function, which will be called during\\n * @dev fulfillment with the randomness result.\\n */\\nabstract contract VRFV2PlusWrapperConsumerBase {\\n  error OnlyVRFWrapperCanFulfill(address have, address want);\\n\\n  LinkTokenInterface internal immutable i_linkToken;\\n  IVRFV2PlusWrapper public immutable i_vrfV2PlusWrapper;\\n\\n  /**\\n   * @param _vrfV2PlusWrapper is the address of the VRFV2Wrapper contract\\n   */\\n  constructor(address _vrfV2PlusWrapper) {\\n    IVRFV2PlusWrapper vrfV2PlusWrapper = IVRFV2PlusWrapper(_vrfV2PlusWrapper);\\n\\n    i_linkToken = LinkTokenInterface(vrfV2PlusWrapper.link());\\n    i_vrfV2PlusWrapper = vrfV2PlusWrapper;\\n  }\\n\\n  /**\\n   * @dev Requests randomness from the VRF V2+ wrapper.\\n   *\\n   * @param _callbackGasLimit is the gas limit that should be used when calling the consumer's\\n   *        fulfillRandomWords function.\\n   * @param _requestConfirmations is the number of confirmations to wait before fulfilling the\\n   *        request. A higher number of confirmations increases security by reducing the likelihood\\n   *        that a chain re-org changes a published randomness outcome.\\n   * @param _numWords is the number of random words to request.\\n   *\\n   * @return requestId is the VRF V2+ request ID of the newly created randomness request.\\n   */\\n  // solhint-disable-next-line chainlink-solidity/prefix-internal-functions-with-underscore\\n  function requestRandomness(\\n    uint32 _callbackGasLimit,\\n    uint16 _requestConfirmations,\\n    uint32 _numWords,\\n    bytes memory extraArgs\\n  ) internal returns (uint256 requestId, uint256 reqPrice) {\\n    reqPrice = i_vrfV2PlusWrapper.calculateRequestPrice(_callbackGasLimit, _numWords);\\n    i_linkToken.transferAndCall(\\n      address(i_vrfV2PlusWrapper),\\n      reqPrice,\\n      abi.encode(_callbackGasLimit, _requestConfirmations, _numWords, extraArgs)\\n    );\\n    return (i_vrfV2PlusWrapper.lastRequestId(), reqPrice);\\n  }\\n\\n  // solhint-disable-next-line chainlink-solidity/prefix-internal-functions-with-underscore\\n  function requestRandomnessPayInNative(\\n    uint32 _callbackGasLimit,\\n    uint16 _requestConfirmations,\\n    uint32 _numWords,\\n    bytes memory extraArgs\\n  ) internal returns (uint256 requestId, uint256 requestPrice) {\\n    requestPrice = i_vrfV2PlusWrapper.calculateRequestPriceNative(_callbackGasLimit, _numWords);\\n    return (\\n      i_vrfV2PlusWrapper.requestRandomWordsInNative{value: requestPrice}(\\n        _callbackGasLimit,\\n        _requestConfirmations,\\n        _numWords,\\n        extraArgs\\n      ),\\n      requestPrice\\n    );\\n  }\\n\\n  /**\\n   * @notice fulfillRandomWords handles the VRF V2 wrapper response. The consuming contract must\\n   * @notice implement it.\\n   *\\n   * @param _requestId is the VRF V2 request ID.\\n   * @param _randomWords is the randomness result.\\n   */\\n  // solhint-disable-next-line chainlink-solidity/prefix-internal-functions-with-underscore\\n  function fulfillRandomWords(uint256 _requestId, uint256[] memory _randomWords) internal virtual;\\n\\n  function rawFulfillRandomWords(uint256 _requestId, uint256[] memory _randomWords) external {\\n    address vrfWrapperAddr = address(i_vrfV2PlusWrapper);\\n    if (msg.sender != vrfWrapperAddr) {\\n      revert OnlyVRFWrapperCanFulfill(msg.sender, vrfWrapperAddr);\\n    }\\n    fulfillRandomWords(_requestId, _randomWords);\\n  }\\n\\n  /// @notice getBalance returns the native balance of the consumer contract\\n  function getBalance() public view returns (uint256) {\\n    return address(this).balance;\\n  }\\n\\n  /// @notice getLinkToken returns the link token contract\\n  function getLinkToken() public view returns (LinkTokenInterface) {\\n    return i_linkToken;\\n  }\\n}\\n\",\"keccak256\":\"0x94aec923d28f4b16648e277717644251d47e6c90af1797d2be727619521a5b92\",\"license\":\"MIT\"},\"@chainlink/contracts/src/v0.8/vrf/dev/interfaces/IVRFV2PlusWrapper.sol\":{\"content\":\"// SPDX-License-Identifier: MIT\\npragma solidity ^0.8.0;\\n\\ninterface IVRFV2PlusWrapper {\\n  /**\\n   * @return the request ID of the most recent VRF V2 request made by this wrapper. This should only\\n   * be relied option within the same transaction that the request was made.\\n   */\\n  function lastRequestId() external view returns (uint256);\\n\\n  /**\\n   * @notice Calculates the price of a VRF request with the given callbackGasLimit at the current\\n   * @notice block.\\n   *\\n   * @dev This function relies on the transaction gas price which is not automatically set during\\n   * @dev simulation. To estimate the price at a specific gas price, use the estimatePrice function.\\n   *\\n   * @param _callbackGasLimit is the gas limit used to estimate the price.\\n   * @param _numWords is the number of words to request.\\n   */\\n  function calculateRequestPrice(uint32 _callbackGasLimit, uint32 _numWords) external view returns (uint256);\\n\\n  /**\\n   * @notice Calculates the price of a VRF request in native with the given callbackGasLimit at the current\\n   * @notice block.\\n   *\\n   * @dev This function relies on the transaction gas price which is not automatically set during\\n   * @dev simulation. To estimate the price at a specific gas price, use the estimatePrice function.\\n   *\\n   * @param _callbackGasLimit is the gas limit used to estimate the price.\\n   * @param _numWords is the number of words to request.\\n   */\\n  function calculateRequestPriceNative(uint32 _callbackGasLimit, uint32 _numWords) external view returns (uint256);\\n\\n  /**\\n   * @notice Estimates the price of a VRF request with a specific gas limit and gas price.\\n   *\\n   * @dev This is a convenience function that can be called in simulation to better understand\\n   * @dev pricing.\\n   *\\n   * @param _callbackGasLimit is the gas limit used to estimate the price.\\n   * @param _numWords is the number of words to request.\\n   * @param _requestGasPriceWei is the gas price in wei used for the estimation.\\n   */\\n  function estimateRequestPrice(\\n    uint32 _callbackGasLimit,\\n    uint32 _numWords,\\n    uint256 _requestGasPriceWei\\n  ) external view returns (uint256);\\n\\n  /**\\n   * @notice Estimates the price of a VRF request in native with a specific gas limit and gas price.\\n   *\\n   * @dev This is a convenience function that can be called in simulation to better understand\\n   * @dev pricing.\\n   *\\n   * @param _callbackGasLimit is the gas limit used to estimate the price.\\n   * @param _numWords is the number of words to request.\\n   * @param _requestGasPriceWei is the gas price in wei used for the estimation.\\n   */\\n  function estimateRequestPriceNative(\\n    uint32 _callbackGasLimit,\\n    uint32 _numWords,\\n    uint256 _requestGasPriceWei\\n  ) external view returns (uint256);\\n\\n  /**\\n   * @notice Requests randomness from the VRF V2 wrapper, paying in native token.\\n   *\\n   * @param _callbackGasLimit is the gas limit for the request.\\n   * @param _requestConfirmations number of request confirmations to wait before serving a request.\\n   * @param _numWords is the number of words to request.\\n   */\\n  function requestRandomWordsInNative(\\n    uint32 _callbackGasLimit,\\n    uint16 _requestConfirmations,\\n    uint32 _numWords,\\n    bytes calldata extraArgs\\n  ) external payable returns (uint256 requestId);\\n\\n  function link() external view returns (address);\\n  function linkNativeFeed() external view returns (address);\\n}\\n\",\"keccak256\":\"0x23a19b6fa394e21359d39d78a081ddaa68160cca4b8850afbec5843bd16a844f\",\"license\":\"MIT\"},\"@chainlink/contracts/src/v0.8/vrf/dev/libraries/VRFV2PlusClient.sol\":{\"content\":\"// SPDX-License-Identifier: MIT\\npragma solidity ^0.8.4;\\n\\n// End consumer library.\\nlibrary VRFV2PlusClient {\\n  // extraArgs will evolve to support new features\\n  bytes4 public constant EXTRA_ARGS_V1_TAG = bytes4(keccak256(\\\"VRF ExtraArgsV1\\\"));\\n  struct ExtraArgsV1 {\\n    bool nativePayment;\\n  }\\n\\n  struct RandomWordsRequest {\\n    bytes32 keyHash;\\n    uint256 subId;\\n    uint16 requestConfirmations;\\n    uint32 callbackGasLimit;\\n    uint32 numWords;\\n    bytes extraArgs;\\n  }\\n\\n  function _argsToBytes(ExtraArgsV1 memory extraArgs) internal pure returns (bytes memory bts) {\\n    return abi.encodeWithSelector(EXTRA_ARGS_V1_TAG, extraArgs);\\n  }\\n}\\n\",\"keccak256\":\"0x839ad7a737ef18147b518b4ec3cbaf4a49dc994db65cf8369ed4e69d169a98a6\",\"license\":\"MIT\"},\"contracts/TreasureHunt.sol\":{\"content\":\"// SPDX-License-Identifier: UNLICENSED\\npragma solidity =0.8.24;\\n\\nimport {VRFV2PlusWrapperConsumerBase} from \\\"@chainlink/contracts/src/v0.8/vrf/dev/VRFV2PlusWrapperConsumerBase.sol\\\";\\nimport {VRFV2PlusClient} from \\\"@chainlink/contracts/src/v0.8/vrf/dev/libraries/VRFV2PlusClient.sol\\\";\\n/**\\n * @title TreasureHunt\\n * @dev A game contract where players participate in a treasure hunt, with position moves and treasure location updates.\\n */\\n\\ncontract TreasureHunt is VRFV2PlusWrapperConsumerBase {\\n    // Enum representing possible move directions\\n    enum Directions {\\n        Left,\\n        Right,\\n        Top,\\n        Bottom\\n    }\\n\\n    enum TreasureMove {\\n        MultipleOfFive,\\n        PrimeNumber\\n    }\\n\\n    struct Game {\\n        uint8 treasurePosition;\\n        bool treasureMoving; // players cannont play when treasure is moving\\n        uint40 startTime;\\n        address winner;\\n        uint256 tvl;\\n        uint256 playerCount;\\n    }\\n\\n    struct Player {\\n        uint8 position;\\n        bool isActive;\\n    }\\n\\n    struct Request {\\n        address player;\\n        uint8 newPosition;\\n        TreasureMove condition;\\n        bool newGame;\\n        uint256 requestId;\\n    }\\n\\n    // Constants\\n    /* Bitmap of prime numbers from 0 to 99\\n     Each bit represents a number, 1 if prime, 0 if not\\n     100 bits, so we use a uint128\\n    */\\n    uint256 private constant _PRIME_BITMASK = 0x20208828828208a20a08a28ac;\\n    bytes private extraArgs;\\n    uint32 private constant CALLBACK_GAS_LIMIT = 100000;\\n    uint32 private constant _NUM_OF_RANDOM_WORDS = 1;\\n    uint16 private immutable _REQUEST_CONFIRMATIONS;\\n\\n    // Public Variables\\n    uint256 public currentGameIndex; // Current game round index\\n    uint8 public constant GRID_SIZE = 100;\\n    uint256 public constant PARTICIPATION_FEE = 0.1 ether;\\n    uint256 public immutable GAME_DURATION;\\n    uint256 public immutable MIN_IDLE_GAMES;\\n    address public immutable DEPLOYER;\\n    mapping(uint256 gameIndex => Game game) public games;\\n    mapping(uint256 gameIndex => mapping(address userAddress => Player position)) public players;\\n    Request public request;\\n\\n    // Events\\n    event PlayerRegistered(address indexed player, uint256 currentGameIndex);\\n    event PlayerMoved(address player, uint256 currentGameIndex, uint8 newPosition);\\n    event TreasureMoved(uint8 indexed newPosition, uint256 currentGameIndex);\\n    event GameWon(address indexed winner, uint256 prize, uint256 currentGameIndex);\\n    event GameStarted(uint256 indexed currentGameIndex, uint256 initialTVL, uint8 initialTreasurePosition);\\n    event GameExpired(uint256 indexed currentGameIndex);\\n    event FundsWithdrawn(address indexed user);\\n    event RequestSent(uint256 requestId);\\n    event RequestFulfilled(uint256 requestId, uint256[] randomWords);\\n    event Received(address indexed sender, uint256 amount);\\n    event InactiveGamesTVLWithdrawn(address indexed withdrawer, uint256 amount);\\n\\n    // Custom Errors\\n    error UserAlreadyRegistered(address user);\\n    error WaitForNextTurn();\\n    error InvalidMove(Directions move, uint8 currentPosition);\\n    error GameNotExpired(uint256 currentGameIndex);\\n    error GameNotActive(uint256 currentGameIndex);\\n    error GameCannotBeExpired(uint256 currentGameIndex);\\n    error ZeroAmountToWithdraw();\\n    error CannotStartNewGame();\\n    error InvalidExpiry();\\n    error InvalidTurnDuration();\\n    error InvalidParticipationFee();\\n    error ErrorMovingTreasure();\\n    error RequestNotFound(uint256 requestId);\\n    error NoInactiveGameWithTVLToWithdraw();\\n    error NotEnoughGamesPlayedYetToWithdrawTVL(uint256 currentGameIndex);\\n    error NumberMustBeLessThanHundered();\\n    error OnlyDeployerCanCall();\\n\\n    /**\\n     * @dev Constructor to initialize the contract with minimum turn duration and expiry duration.\\n     * @param _vrfV2PlusWrapper Address of chainlink vrfV2PlusWrapper contract on deployment chain\\n     * @param _requestConfirmation The number of block confirmations the VRF service will wait to respond.\\n     * @param _gameDuration Duration till the game lasts\\n     * @param _inactiveGamesWithdrawTVLIndex Index count for inactive games for withdrawal of accumulated TVL\\n     */\\n    constructor(\\n        address _vrfV2PlusWrapper,\\n        uint16 _requestConfirmation,\\n        uint256 _gameDuration,\\n        uint256 _inactiveGamesWithdrawTVLIndex\\n    ) VRFV2PlusWrapperConsumerBase(_vrfV2PlusWrapper) {\\n        DEPLOYER = msg.sender;\\n        currentGameIndex++;\\n        games[currentGameIndex].startTime = uint40(block.timestamp);\\n        uint8 initialTreasurePosition = _generateInitialRandomPosition();\\n        games[currentGameIndex].treasurePosition = initialTreasurePosition;\\n        _REQUEST_CONFIRMATIONS = _requestConfirmation;\\n        GAME_DURATION = _gameDuration;\\n        MIN_IDLE_GAMES = _inactiveGamesWithdrawTVLIndex;\\n\\n        emit GameStarted(currentGameIndex, games[currentGameIndex].tvl, initialTreasurePosition);\\n        extraArgs = VRFV2PlusClient._argsToBytes(VRFV2PlusClient.ExtraArgsV1({nativePayment: true}));\\n    }\\n\\n    // Modifiers\\n\\n    /**\\n     * @dev Modifier to check if the game has expired.\\n     */\\n    modifier gameExpired(uint256 gameIndex) {\\n        if (gameIndex >= currentGameIndex) {\\n            revert GameNotExpired(currentGameIndex);\\n        }\\n        _;\\n    }\\n\\n    // External functions\\n\\n    /**\\n     * @dev Participate in the game by paying the participation fee.\\n     * @notice The participant must send Ether to join the game.\\n     * If the player has already registered for the current game round, the transaction will revert.\\n     * Emits a {PlayerRegistered} event.\\n     */\\n    function participate() external payable {\\n        if (msg.value != PARTICIPATION_FEE) {\\n            revert InvalidParticipationFee();\\n        }\\n        address participant = msg.sender;\\n\\n        if (players[currentGameIndex][participant].isActive) {\\n            revert UserAlreadyRegistered(participant);\\n        }\\n\\n        games[currentGameIndex].playerCount++;\\n        games[currentGameIndex].tvl += PARTICIPATION_FEE;\\n        players[currentGameIndex][participant].isActive = true;\\n\\n        emit PlayerRegistered(participant, currentGameIndex);\\n    }\\n\\n    /**\\n     * @dev Allows a player to make a move in the specified direction.\\n     * The player must wait for their turn before making a move.\\n     * Updates the player's position and checks if the move results in winning the game.\\n     * If the player wins, the game is ended; otherwise, the treasure's position is updated.\\n     *\\n     * Emits a {PlayerMoved} event when the player makes a move.\\n     *\\n     * @param move The direction in which the player wants to move. This should be one of the values from the `Directions` enum.\\n     */\\n    function play(Directions move) public payable {\\n        uint256 _currentGameIndex = currentGameIndex;\\n        Player memory _player = players[_currentGameIndex][msg.sender];\\n        require(_player.isActive, \\\"INACTIVE player\\\");\\n        Game memory _game = games[_currentGameIndex];\\n        require(!_game.treasureMoving, \\\"Treasure is in movement\\\");\\n        uint8 playerPosition = _player.position;\\n        uint8 treasurePosition = _game.treasurePosition;\\n\\n        if (playerPosition == treasurePosition) {\\n            _endGameAndProcessFunds(_currentGameIndex, msg.sender);\\n        } else {\\n            uint8 newPosition = _newPosition(playerPosition, move);\\n\\n            if (_isPrime(newPosition)) {\\n                request.condition = TreasureMove.PrimeNumber;\\n                request.player = msg.sender;\\n                request.newPosition = newPosition;\\n\\n                _requestRandomWords(_currentGameIndex);\\n            } else if (newPosition % 5 == 0) {\\n                request.condition = TreasureMove.MultipleOfFive;\\n                request.player = msg.sender;\\n                request.newPosition = newPosition;\\n\\n                _requestRandomWords(_currentGameIndex);\\n            } else {\\n                players[_currentGameIndex][msg.sender].position = newPosition;\\n                emit PlayerMoved(msg.sender, _currentGameIndex, newPosition);\\n                if (newPosition == treasurePosition) {\\n                    _endGameAndProcessFunds(_currentGameIndex, msg.sender);\\n                }\\n            }\\n        }\\n    }\\n\\n    /**\\n     * @dev Expire the current game.\\n     *\\n     * Emits a {GameExpired} event.\\n     *\\n     * Reverts with:\\n     * - `GameCannotBeExpired` if the current time is less than the game's expiry time.\\n     */\\n    function expireCurrentGame() external {\\n        uint256 _currentGameIndex = currentGameIndex;\\n        Game memory game = games[_currentGameIndex];\\n        if (block.timestamp <= (game.startTime + GAME_DURATION)) {\\n            revert GameCannotBeExpired(_currentGameIndex);\\n        }\\n\\n        games[_currentGameIndex + 1].tvl = game.tvl - (game.playerCount * PARTICIPATION_FEE); // Remaining 10% stays for the next round\\n\\n        _startNewGame(_currentGameIndex);\\n        emit GameExpired(_currentGameIndex);\\n    }\\n\\n    /// @notice Allows withdrawal of TVL from inactive games\\n    /// @dev This function checks for a series of inactive games and allows withdrawal of accumulated TVL\\n    function withdrawInactiveGamesTVL() external {\\n        if(msg.sender != DEPLOYER){\\n            revert OnlyDeployerCanCall();\\n        }\\n        uint256 _currentGameIndex = currentGameIndex;\\n\\n        // Check if there are enough games played to allow withdrawal\\n        if (_currentGameIndex < MIN_IDLE_GAMES) {\\n            revert NotEnoughGamesPlayedYetToWithdrawTVL(_currentGameIndex);\\n        }\\n\\n        Game memory currentGame = games[_currentGameIndex];\\n\\n        // Ensure the current game has expired\\n        if (block.timestamp <= currentGame.startTime + GAME_DURATION) {\\n            revert GameCannotBeExpired(_currentGameIndex);\\n        }\\n\\n        uint256 startIndex = _currentGameIndex - MIN_IDLE_GAMES;\\n\\n        // Iterate through the range and ensure all games are inactive with non-zero TVL\\n        for (uint256 i = startIndex; i <= _currentGameIndex; i++) {\\n            // If any game in the range is not inactive with non-zero TVL, revert immediately\\n            if (games[i].winner != address(0) || games[i].tvl == 0) {\\n                revert NoInactiveGameWithTVLToWithdraw();\\n            }\\n        }\\n\\n        // Withdraw TVL of the current game to the caller\\n        uint256 withdrawableTVL = currentGame.tvl;\\n        payable(msg.sender).transfer(withdrawableTVL);\\n        _startNewGame(_currentGameIndex);\\n\\n        emit InactiveGamesTVLWithdrawn(msg.sender, withdrawableTVL);\\n    }\\n\\n    /**\\n     * @dev Withdraw participation funds after the game has expired.\\n     *\\n     * Requirements:\\n     * - The current game must be expired.\\n     * - The caller must have a non-zero participation fee for the expired game.\\n     *\\n     * Emits a {FundsWithdrawn} event.\\n     */\\n    function withdrawFunds(uint256 gameIndex) external gameExpired(gameIndex) {\\n        Player storage player = players[gameIndex][msg.sender];\\n        if (!player.isActive) {\\n            revert ZeroAmountToWithdraw();\\n        }\\n        player.isActive = false;\\n        games[gameIndex].playerCount--;\\n        games[gameIndex].tvl -= PARTICIPATION_FEE;\\n        address payable receiver = payable(msg.sender);\\n        receiver.transfer(PARTICIPATION_FEE);\\n\\n        emit FundsWithdrawn(receiver);\\n    }\\n\\n    // Internal Functions\\n\\n    function _isPrime(uint8 number) internal pure returns (bool) {\\n        if (number >= GRID_SIZE) {\\n            revert NumberMustBeLessThanHundered();\\n        }\\n        return (_PRIME_BITMASK & (1 << number)) != 0;\\n    }\\n\\n    /**\\n     * @notice Handles the fulfillment of random words from the VRF (Verifiable Random Function) request.\\n     * @dev This function is called by the VRFCoordinator when it receives the VRF response. It updates\\n     *      the request status to fulfilled, stores the received random words, and emits an event.\\n     *      Depending on the value of `resetTreasurePosition`, it either resets or moves the treasure's position.\\n     * @param _requestId The unique identifier of the VRF request.\\n     * @param _randomWords An array of random words provided by the VRF Coordinator.\\n     */\\n    function fulfillRandomWords(uint256 _requestId, uint256[] memory _randomWords) internal override {\\n        uint256 _currentGameIndex = currentGameIndex;\\n        games[_currentGameIndex].treasureMoving = false;\\n        if (request.requestId != _requestId) {\\n            revert RequestNotFound(_requestId);\\n        }\\n        if (request.newGame) {\\n            _resetTreasurePosition(_randomWords[0]);\\n        } else {\\n            _moveTreasure(_randomWords[0]);\\n\\n            if (request.newPosition == games[_currentGameIndex].treasurePosition) {\\n                _endGameAndProcessFunds(_currentGameIndex, request.player);\\n            }\\n        }\\n        emit RequestFulfilled(_requestId, _randomWords);\\n    }\\n\\n    /**\\n     * @dev Moves the treasure based on the player's new position.\\n     * The treasure's movement is determined by specific conditions:\\n     * - If the player's current position is divisible by 5, the treasure will move to a random adjacent position.\\n     * - If the treasure's current position is a prime number, it will move to a random position on the grid.\\n     * Emits a `TreasureMoved` event after the treasure has moved.\\n     */\\n    function _moveTreasure(uint256 randomWord) internal {\\n        if (request.condition == TreasureMove.MultipleOfFive) {\\n            _moveToRandomAdjacentPosition(randomWord);\\n        } else if (request.condition == TreasureMove.PrimeNumber) {\\n            _moveToRandomPosition(randomWord);\\n        }\\n    }\\n\\n    /**\\n     * @dev Handle the winning condition, transfer the reward to the winner, and reset the game.\\n     * This function is triggered when a player lands on the treasure's position.\\n     * It performs the following actions:\\n     * - Sets the current player as the winner for the game.\\n     * - Transfers 90% of the total balance as the reward to the winner.\\n     * - Emits a `GameWon` event to announce the winner and the reward.\\n     * - Calls `_resetGame` to start a new game round.\\n     */\\n    function _endGameAndProcessFunds(uint256 _currentGameIndex, address _winner) internal {\\n        games[_currentGameIndex].winner = _winner;\\n        uint256 reward = (games[_currentGameIndex].tvl * 9) / 10;\\n        payable(_winner).transfer(reward);\\n        games[_currentGameIndex + 1].tvl = address(this).balance; // Remaining 10% stays for the next round\\n        emit GameWon(_winner, reward, _currentGameIndex);\\n        _startNewGame(_currentGameIndex);\\n    }\\n\\n    /**\\n     * @dev Start a new game round.\\n     * Increments the game index, sets the game as active, and moves the treasure to a new random position.\\n     * The expiry time for the new game round is also set based on the expiry duration.\\n     * Emits a `GameStarted` event with the new game index.\\n     */\\n    function _startNewGame(uint256 _currentGameIndex) internal {\\n        currentGameIndex++;\\n        games[currentGameIndex].startTime = uint40(block.timestamp);\\n\\n        request.newGame = true;\\n        _requestRandomWords(_currentGameIndex);\\n    }\\n\\n    /**\\n     * @dev Moves the treasure to a random position on the grid.\\n     * Ensures that the new position is neither the current position of the treasure\\n     * nor the current position of the player.\\n     */\\n    function _moveToRandomPosition(uint256 randomWord) internal {\\n        uint8 newTreasurePosition = uint8(randomWord % GRID_SIZE);\\n        games[currentGameIndex].treasurePosition = newTreasurePosition;\\n        emit TreasureMoved(newTreasurePosition, currentGameIndex);\\n    }\\n\\n    /**\\n     * @dev Moves the treasure to a random adjacent position.\\n     * @notice This function is internal and should only be called from within the contract.\\n     */\\n    function _moveToRandomAdjacentPosition(uint256 randomWord) internal {\\n        uint8 position = games[currentGameIndex].treasurePosition;\\n        uint8[4] memory possiblePositions;\\n        uint8 count = 0;\\n\\n        uint8 y = position / 10; // y axis of the board\\n        uint8 x = position % 10; // x axis of the board\\n\\n        if (x != 0) {\\n            possiblePositions[count++] = position - 1; // valid left\\n        }\\n\\n        if (y != 0) {\\n            possiblePositions[count++] = position - 10; // valid top\\n        }\\n\\n        if (x != 9) {\\n            possiblePositions[count++] = position + 1; // valid right\\n        }\\n\\n        if (y != 9) {\\n            possiblePositions[count++] = position + 10; // valid bottom\\n        }\\n\\n        require(count > 0, \\\"No valid moves\\\");\\n        uint8 newTreasurePosition = possiblePositions[randomWord % count];\\n\\n        games[currentGameIndex].treasurePosition = newTreasurePosition;\\n        emit TreasureMoved(newTreasurePosition, currentGameIndex);\\n    }\\n\\n    /**\\n     * @notice Internal function to request random words from the randomness oracle.\\n     * @dev This function requests a specified number of random words from the randomness oracle.\\n     * @return requestId The ID of the randomness request, which can be used to track and manage the request status.\\n     */\\n    function _requestRandomWords(uint256 _currentGameIndex) internal returns (uint256 requestId) {\\n        games[_currentGameIndex].treasureMoving = true;\\n\\n        (requestId,) =\\n            requestRandomnessPayInNative(CALLBACK_GAS_LIMIT, _REQUEST_CONFIRMATIONS, _NUM_OF_RANDOM_WORDS, extraArgs);\\n        request.requestId = requestId;\\n        emit RequestSent(requestId);\\n    }\\n\\n    /**\\n     * @notice Resets the position of the treasure in the current game.\\n     * @dev This function sets the treasure position based on a random word and reactivates the game.\\n     * @param randomWord A random uint256 value used to determine the new treasure position.\\n     * The treasure position is set as the modulo of this randomWord with GRID_SIZE.\\n     * The function also emits a GameStarted event indicating the game has started with the new settings.\\n     */\\n    function _resetTreasurePosition(uint256 randomWord) internal {\\n        request.newGame = false;\\n        uint8 initialTreasurePosition = uint8(randomWord % GRID_SIZE);\\n        games[currentGameIndex].treasurePosition = initialTreasurePosition;\\n\\n        emit GameStarted(currentGameIndex, games[currentGameIndex].tvl, initialTreasurePosition);\\n    }\\n\\n    /**\\n     * @dev Validate the player's new position based on the input direction.\\n     * @param position current position of user in the game.\\n     * @param move The direction of the move.\\n     * @return nextPosition The validated new position.\\n     */\\n    function _newPosition(uint8 position, Directions move) internal pure returns (uint8 nextPosition) {\\n        uint8 y = position / 10; // y axis of the board\\n        uint8 x = position % 10; // x axis of the board\\n\\n        if (move == Directions.Left) {\\n            nextPosition = (x == 0) ? 100 : position - 1;\\n        } else if (move == Directions.Top) {\\n            nextPosition = (y == 0) ? 100 : position - 10;\\n        } else if (move == Directions.Right) {\\n            nextPosition = (x == 9) ? 100 : position + 1;\\n        } else if (move == Directions.Bottom) {\\n            nextPosition = (y == 9) ? 100 : position + 10;\\n        }\\n\\n        // 100 is a number outside bounds of the board, hence used to check invalid move\\n        if (nextPosition == 100) {\\n            revert InvalidMove(move, position);\\n        }\\n    }\\n\\n    /**\\n     * @dev Generate a random position on the grid.\\n     * @return uint8 The generated random position.\\n     */\\n    function _generateInitialRandomPosition() internal view returns (uint8) {\\n        return uint8(uint256(keccak256(abi.encodePacked(block.timestamp, block.number))) % GRID_SIZE);\\n    }\\n}\\n\",\"keccak256\":\"0xcf6a121bc750b4c7d9145bc6e61d1957a9d2204629eebe6a6aded16c594e859a\",\"license\":\"UNLICENSED\"}},\"version\":1}",
+  "bytecode": "0x6101406040523480156200001257600080fd5b506040516200230038038062002300833981016040819052620000359162000289565b836000819050806001600160a01b0316631c4695f46040518163ffffffff1660e01b8152600401602060405180830381865afa1580156200007a573d6000803e3d6000fd5b505050506040513d601f19601f82011682018060405250810190620000a09190620002d9565b6001600160a01b039081166080521660a05250336101205260018054906000620000ca83620002fe565b90915550506001546000908152600260205260408120805466ffffffffff00001916620100004264ffffffffff160217905562000106620001bb565b600180546000908152600260209081526040808320805460ff191660ff871690811790915561ffff8a1660c05260e089905261010088905284548085529382902090940154815190815291820193909352929350917f5ebe9e4b5ec73754b320dc4b775c3350188dd025d94a21e5dd5a987dba556da2910160405180910390a2604080516020810190915260018152620001a090620001fa565b600090620001af9082620003cd565b505050505050620004bc565b6040805142602080830191909152438284015282518083038401815260609092019092528051910120600090620001f59060649062000499565b905090565b60607f92fd13387c7fe7befbc38d303d6468778fb9731bc4583f17d92989c6fcfdeaaa826040516024016200023491511515815260200190565b60408051601f198184030181529190526020810180516001600160e01b03166001600160e01b03199093169290921790915292915050565b80516001600160a01b03811681146200028457600080fd5b919050565b60008060008060808587031215620002a057600080fd5b620002ab856200026c565b9350602085015161ffff81168114620002c357600080fd5b6040860151606090960151949790965092505050565b600060208284031215620002ec57600080fd5b620002f7826200026c565b9392505050565b6000600182016200031f57634e487b7160e01b600052601160045260246000fd5b5060010190565b634e487b7160e01b600052604160045260246000fd5b600181811c908216806200035157607f821691505b6020821081036200037257634e487b7160e01b600052602260045260246000fd5b50919050565b601f821115620003c8576000816000526020600020601f850160051c81016020861015620003a35750805b601f850160051c820191505b81811015620003c457828155600101620003af565b5050505b505050565b81516001600160401b03811115620003e957620003e962000326565b6200040181620003fa84546200033c565b8462000378565b602080601f831160018114620004395760008415620004205750858301515b600019600386901b1c1916600185901b178555620003c4565b600085815260208120601f198616915b828110156200046a5788860151825594840194600190910190840162000449565b5085821015620004895787850151600019600388901b60f8161c191681555b5050505050600190811b01905550565b600082620004b757634e487b7160e01b600052601260045260246000fd5b500690565b60805160a05160c05160e0516101005161012051611dbc620005446000396000818161040d0152610aae0152600081816102b001528181610b0a0152610c2c015260008181610441015281816109da0152610bde015260006112db015260008181610364015281816106200152818161156501526115d4015260006104900152611dbc6000f3fe6080604052600436106101295760003560e01c80636e072f80116100a5578063c1b8411a11610074578063d11711a211610059578063d11711a214610463578063e5048a1d1461046b578063e76d51681461048157600080fd5b8063c1b8411a146103fb578063c31b29ce1461042f57600080fd5b80636e072f80146103165780637fc4eda81461032b5780639ed0868d14610352578063c0f809211461039e57600080fd5b8063338cdca1116100fc57806349943a13116100e157806349943a13146102d257806353a04b05146102ee5780636788d7f61461030157600080fd5b8063338cdca1146102465780633e99638e1461029e57600080fd5b8063117a5b901461012e57806312065fe0146101e7578063155dd5ee146102045780631fe543e314610226575b600080fd5b34801561013a57600080fd5b5061019c61014936600461191f565b600260208190526000918252604090912080546001820154919092015460ff8084169361010081049091169262010000820464ffffffffff16926701000000000000009092046001600160a01b03169186565b6040805160ff9097168752941515602087015264ffffffffff909316938501939093526001600160a01b03166060840152608083019190915260a082015260c0015b60405180910390f35b3480156101f357600080fd5b50475b6040519081526020016101de565b34801561021057600080fd5b5061022461021f36600461191f565b6104b4565b005b34801561023257600080fd5b5061022461024136600461194e565b61061e565b34801561025257600080fd5b5060045460055461028d916001600160a01b0381169160ff600160a01b8304811692600160a81b8104821692600160b01b9091049091169085565b6040516101de959493929190611a2e565b3480156102aa57600080fd5b506101f67f000000000000000000000000000000000000000000000000000000000000000081565b3480156102de57600080fd5b506101f667016345785d8a000081565b6102246102fc366004611a73565b6106a1565b34801561030d57600080fd5b5061022461095d565b34801561032257600080fd5b50610224610aa3565b34801561033757600080fd5b50610340606481565b60405160ff90911681526020016101de565b34801561035e57600080fd5b506103867f000000000000000000000000000000000000000000000000000000000000000081565b6040516001600160a01b0390911681526020016101de565b3480156103aa57600080fd5b506103e26103b9366004611a9b565b600360209081526000928352604080842090915290825290205460ff8082169161010090041682565b6040805160ff90931683529015156020830152016101de565b34801561040757600080fd5b506103867f000000000000000000000000000000000000000000000000000000000000000081565b34801561043b57600080fd5b506101f67f000000000000000000000000000000000000000000000000000000000000000081565b610224610d5c565b34801561047757600080fd5b506101f660015481565b34801561048d57600080fd5b507f0000000000000000000000000000000000000000000000000000000000000000610386565b8060015481106104ff576001546040517fdb2815de0000000000000000000000000000000000000000000000000000000081526004016104f691815260200190565b60405180910390fd5b600082815260036020908152604080832033845290915290208054610100900460ff16610558576040517ffd8fd35d00000000000000000000000000000000000000000000000000000000815260040160405180910390fd5b805461ff0019168155600083815260026020819052604082200180549161057e83611aed565b90915550506000838152600260205260408120600101805467016345785d8a000092906105ac908490611b04565b90915550506040513390819060009067016345785d8a00009082818181858883f193505050501580156105e3573d6000803e3d6000fd5b506040516001600160a01b038216907f07c755342db70f3cd9b012463bcfdc68a1009115e2f9910e5562f81d73e5c22590600090a250505050565b7f0000000000000000000000000000000000000000000000000000000000000000336001600160a01b03821614610692576040517f8ba9316e0000000000000000000000000000000000000000000000000000000081523360048201526001600160a01b03821660248201526044016104f6565b61069c8383610ed2565b505050565b600154600081815260036020908152604080832033845282529182902082518084019093525460ff80821684526101009091041615159082018190526107295760405162461bcd60e51b815260206004820152600f60248201527f494e41435449564520706c61796572000000000000000000000000000000000060448201526064016104f6565b600082815260026020818152604092839020835160c081018552815460ff80821683526101008204161580159483019490945262010000810464ffffffffff16958201959095526701000000000000009094046001600160a01b03166060850152600181015460808501529091015460a08301526107e95760405162461bcd60e51b815260206004820152601760248201527f547265617375726520697320696e206d6f76656d656e7400000000000000000060448201526064016104f6565b8151815160ff80821690831603610809576108048533611003565b610955565b6000610815838861111c565b905061082081611256565b156108a657600480546001919060ff60a81b1916600160a81b835b0217905550600480547fffffffffffffffffffffff00000000000000000000000000000000000000000016337fffffffffffffffffffffff00ffffffffffffffffffffffffffffffffffffffff1617600160a01b60ff8416021790556108a0866112b3565b50610953565b6108b1600582611b33565b60ff166000036108d557600480546000919060ff60a81b1916600160a81b8361083b565b60008681526003602090815260408083203380855290835292819020805460ff191660ff861690811790915581519384529183018990528201527f703fd1db84e1e045b3a4e9fed6b5b7e0f18e79143cd4da5dd77e5027f79993179060600160405180910390a18160ff168160ff1603610953576109538633611003565b505b505050505050565b60018054600081815260026020818152604092839020835160c081018552815460ff808216835261010082041615159382019390935262010000830464ffffffffff169481018590526701000000000000009092046001600160a01b0316606083015294850154608082015293015460a08401529091906109ff907f000000000000000000000000000000000000000000000000000000000000000090611b55565b4211610a21576040516326193b7360e11b8152600481018390526024016104f6565b67016345785d8a00008160a00151610a399190611b68565b8160800151610a489190611b04565b60026000610a57856001611b55565b8152602081019190915260400160002060010155610a74826113cd565b60405182907f22ad069010df790b4189611020dc593978605c76ec2dca82a6c137eebaf0724890600090a25050565b336001600160a01b037f00000000000000000000000000000000000000000000000000000000000000001614610b05576040517f1d8c257900000000000000000000000000000000000000000000000000000000815260040160405180910390fd5b6001547f0000000000000000000000000000000000000000000000000000000000000000811015610b65576040517f47d0fed1000000000000000000000000000000000000000000000000000000008152600481018290526024016104f6565b600081815260026020818152604092839020835160c081018552815460ff808216835261010082041615159382019390935262010000830464ffffffffff169481018590526701000000000000009092046001600160a01b03166060830152600181015460808301529091015460a082015290610c03907f000000000000000000000000000000000000000000000000000000000000000090611b55565b4211610c25576040516326193b7360e11b8152600481018390526024016104f6565b6000610c517f000000000000000000000000000000000000000000000000000000000000000084611b04565b9050805b838111610ce45760008181526002602052604090205467010000000000000090046001600160a01b0316151580610c9b5750600081815260026020526040902060010154155b15610cd2576040517f26ef02c700000000000000000000000000000000000000000000000000000000815260040160405180910390fd5b80610cdc81611b7f565b915050610c55565b506080820151604051339082156108fc029083906000818181858888f19350505050158015610d17573d6000803e3d6000fd5b50610d21846113cd565b60405181815233907f65ba53ce31cf13c6964113c44e4c2a546ed8aae0ffde2ea6c3702a3e8a45a49a9060200160405180910390a250505050565b67016345785d8a00003414610d9d576040517f7a07209000000000000000000000000000000000000000000000000000000000815260040160405180910390fd5b600154600090815260036020908152604080832033808552925290912054610100900460ff1615610e05576040517f9e676ee70000000000000000000000000000000000000000000000000000000081526001600160a01b03821660048201526024016104f6565b6001546000908152600260208190526040822001805491610e2583611b7f565b919050555067016345785d8a00006002600060015481526020019081526020016000206001016000828254610e5a9190611b55565b90915550506001805460009081526003602090815260408083206001600160a01b038616808552925291829020805461ff001916610100179055915490517f324cb0062138d65997c86cd3012489ceb351d602f2f55c7408306e8040c79f3f91610ec79190815260200190565b60405180910390a250565b6001546000818152600260205260409020805461ff00191690556005548314610f2a576040517f4ec726c7000000000000000000000000000000000000000000000000000000008152600481018490526024016104f6565b600454600160b01b900460ff1615610f6457610f5f82600081518110610f5257610f52611b98565b6020026020010151611431565b610fc5565b610f8782600081518110610f7a57610f7a611b98565b60200260200101516114bd565b60008181526002602052604090205460045460ff918216600160a01b90910490911603610fc557600454610fc59082906001600160a01b0316611003565b7ffe2e2d779dba245964d4e3ef9b994be63856fd568bf7d3ca9e224755cb1bd54d8383604051610ff6929190611bae565b60405180910390a1505050565b600082815260026020526040812080547fffffffffff0000000000000000000000000000000000000000ffffffffffffff166701000000000000006001600160a01b0385160217815560010154600a9061105e906009611b68565b6110689190611bfe565b6040519091506001600160a01b0383169082156108fc029083906000818181858888f193505050501580156110a1573d6000803e3d6000fd5b5047600260006110b2866001611b55565b815260200190815260200160002060010181905550816001600160a01b03167f2ffb5e4748e43f6ca515f554cade99a469e03fa57973c54c2cb30d8d4cb788d9828560405161110b929190918252602082015260400190565b60405180910390a261069c836113cd565b60008061112a600a85611c12565b90506000611139600a86611b33565b9050600084600381111561114f5761114f611a18565b036111775760ff81161561116d57611168600186611c34565b611170565b60645b925061120d565b600284600381111561118b5761118b611a18565b036111a45760ff82161561116d57611168600a86611c34565b60018460038111156111b8576111b8611a18565b036111d3578060ff1660091461116d57611168856001611c4d565b60038460038111156111e7576111e7611a18565b0361120d578160ff166009146112075761120285600a611c4d565b61120a565b60645b92505b8260ff1660640361124e5783856040517f6f7ff9ff0000000000000000000000000000000000000000000000000000000081526004016104f6929190611c66565b505092915050565b6000606460ff831610611295576040517facdbc25500000000000000000000000000000000000000000000000000000000815260040160405180910390fd5b50600160ff919091161b6c020208828828208a20a08a28ac16151590565b6000818152600260205260408120805461ff001916610100179055805461138c90620186a0907f000000000000000000000000000000000000000000000000000000000000000090600190859061130990611c8c565b80601f016020809104026020016040519081016040528092919081815260200182805461133590611c8c565b80156113825780601f1061135757610100808354040283529160200191611382565b820191906000526020600020905b81548152906001019060200180831161136557829003601f168201915b505050505061151c565b5060058190556040518181529091507f0cd21a41891ff04ecd9a8754bec97e2fb85d2a4e7694329d4dc364c796f23d069060200160405180910390a1919050565b600180549060006113dd83611b7f565b90915550506001546000908152600260205260409020805464ffffffffff4216620100000266ffffffffff0000199091161790556004805460ff60b01b1916600160b01b17905561142d816112b3565b5050565b6004805460ff60b01b19169055600061144b606483611cc6565b600180546000908152600260209081526040808320805460ff191660ff871690811790915584548085529382902090940154815190815291820193909352929350917f5ebe9e4b5ec73754b320dc4b775c3350188dd025d94a21e5dd5a987dba556da291015b60405180910390a25050565b6000600454600160a81b900460ff1660018111156114dd576114dd611a18565b036114ee576114eb81611673565b50565b6001600454600160a81b900460ff16600181111561150e5761150e611a18565b036114eb576114eb8161189a565b6040517f13c34b7f00000000000000000000000000000000000000000000000000000000815263ffffffff80861660048301528316602482015260009081906001600160a01b037f000000000000000000000000000000000000000000000000000000000000000016906313c34b7f90604401602060405180830381865afa1580156115ac573d6000803e3d6000fd5b505050506040513d601f19601f820116820180604052508101906115d09190611cda565b90507f00000000000000000000000000000000000000000000000000000000000000006001600160a01b0316639cfc058e82888888886040518663ffffffff1660e01b81526004016116259493929190611cf3565b60206040518083038185885af1158015611643573d6000803e3d6000fd5b50505050506040513d601f19601f820116820180604052508101906116689190611cda565b915094509492505050565b60015460009081526002602052604090205460ff16611690611901565b60008061169e600a85611c12565b905060006116ad600a86611b33565b905060ff8116156116f1576116c3600186611c34565b84846116ce81611d67565b955060ff16600481106116e3576116e3611b98565b60ff90921660209290920201525b60ff82161561173357611705600a86611c34565b848461171081611d67565b955060ff166004811061172557611725611b98565b60ff90921660209290920201525b8060ff1660091461177757611749856001611c4d565b848461175481611d67565b955060ff166004811061176957611769611b98565b60ff90921660209290920201525b8160ff166009146117bb5761178d85600a611c4d565b848461179881611d67565b955060ff16600481106117ad576117ad611b98565b60ff90921660209290920201525b60008360ff161161180e5760405162461bcd60e51b815260206004820152600e60248201527f4e6f2076616c6964206d6f76657300000000000000000000000000000000000060448201526064016104f6565b60008461181e60ff861689611cc6565b6004811061182e5761182e611b98565b6020908102919091015160018054600090815260028452604090819020805460ff191660ff851690811790915591549051908152919350917fd0c6ead5d9a5593f4bc9066d6c7da575963bb64b25ea289279d6b92d594516cc910160405180910390a250505050505050565b60006118a7606483611cc6565b60018054600090815260026020908152604091829020805460ff191660ff86169081179091559254915191825292935090917fd0c6ead5d9a5593f4bc9066d6c7da575963bb64b25ea289279d6b92d594516cc91016114b1565b60405180608001604052806004906020820280368337509192915050565b60006020828403121561193157600080fd5b5035919050565b634e487b7160e01b600052604160045260246000fd5b6000806040838503121561196157600080fd5b8235915060208084013567ffffffffffffffff8082111561198157600080fd5b818601915086601f83011261199557600080fd5b8135818111156119a7576119a7611938565b8060051b604051601f19603f830116810181811085821117156119cc576119cc611938565b6040529182528482019250838101850191898311156119ea57600080fd5b938501935b82851015611a08578435845293850193928501926119ef565b8096505050505050509250929050565b634e487b7160e01b600052602160045260246000fd5b6001600160a01b038616815260ff8516602082015260a0810160028510611a5757611a57611a18565b6040820194909452911515606083015260809091015292915050565b600060208284031215611a8557600080fd5b813560048110611a9457600080fd5b9392505050565b60008060408385031215611aae57600080fd5b8235915060208301356001600160a01b0381168114611acc57600080fd5b809150509250929050565b634e487b7160e01b600052601160045260246000fd5b600081611afc57611afc611ad7565b506000190190565b81810381811115611b1757611b17611ad7565b92915050565b634e487b7160e01b600052601260045260246000fd5b600060ff831680611b4657611b46611b1d565b8060ff84160691505092915050565b80820180821115611b1757611b17611ad7565b8082028115828204841417611b1757611b17611ad7565b600060018201611b9157611b91611ad7565b5060010190565b634e487b7160e01b600052603260045260246000fd5b60006040820184835260206040602085015281855180845260608601915060208701935060005b81811015611bf157845183529383019391830191600101611bd5565b5090979650505050505050565b600082611c0d57611c0d611b1d565b500490565b600060ff831680611c2557611c25611b1d565b8060ff84160491505092915050565b60ff8281168282160390811115611b1757611b17611ad7565b60ff8181168382160190811115611b1757611b17611ad7565b6040810160048410611c7a57611c7a611a18565b92815260ff9190911660209091015290565b600181811c90821680611ca057607f821691505b602082108103611cc057634e487b7160e01b600052602260045260246000fd5b50919050565b600082611cd557611cd5611b1d565b500690565b600060208284031215611cec57600080fd5b5051919050565b600063ffffffff8087168352602061ffff871660208501528186166040850152608060608501528451915081608085015260005b82811015611d435785810182015185820160a001528101611d27565b5050600060a0828501015260a0601f19601f83011684010191505095945050505050565b600060ff821660ff8103611d7d57611d7d611ad7565b6001019291505056fea264697066735822122015695705aa148d30e1bf1764144bf9cfd7e69a8e1e2545f3ece9b43a2b62163064736f6c63430008180033",
+  "deployedBytecode": "0x6080604052600436106101295760003560e01c80636e072f80116100a5578063c1b8411a11610074578063d11711a211610059578063d11711a214610463578063e5048a1d1461046b578063e76d51681461048157600080fd5b8063c1b8411a146103fb578063c31b29ce1461042f57600080fd5b80636e072f80146103165780637fc4eda81461032b5780639ed0868d14610352578063c0f809211461039e57600080fd5b8063338cdca1116100fc57806349943a13116100e157806349943a13146102d257806353a04b05146102ee5780636788d7f61461030157600080fd5b8063338cdca1146102465780633e99638e1461029e57600080fd5b8063117a5b901461012e57806312065fe0146101e7578063155dd5ee146102045780631fe543e314610226575b600080fd5b34801561013a57600080fd5b5061019c61014936600461191f565b600260208190526000918252604090912080546001820154919092015460ff8084169361010081049091169262010000820464ffffffffff16926701000000000000009092046001600160a01b03169186565b6040805160ff9097168752941515602087015264ffffffffff909316938501939093526001600160a01b03166060840152608083019190915260a082015260c0015b60405180910390f35b3480156101f357600080fd5b50475b6040519081526020016101de565b34801561021057600080fd5b5061022461021f36600461191f565b6104b4565b005b34801561023257600080fd5b5061022461024136600461194e565b61061e565b34801561025257600080fd5b5060045460055461028d916001600160a01b0381169160ff600160a01b8304811692600160a81b8104821692600160b01b9091049091169085565b6040516101de959493929190611a2e565b3480156102aa57600080fd5b506101f67f000000000000000000000000000000000000000000000000000000000000000081565b3480156102de57600080fd5b506101f667016345785d8a000081565b6102246102fc366004611a73565b6106a1565b34801561030d57600080fd5b5061022461095d565b34801561032257600080fd5b50610224610aa3565b34801561033757600080fd5b50610340606481565b60405160ff90911681526020016101de565b34801561035e57600080fd5b506103867f000000000000000000000000000000000000000000000000000000000000000081565b6040516001600160a01b0390911681526020016101de565b3480156103aa57600080fd5b506103e26103b9366004611a9b565b600360209081526000928352604080842090915290825290205460ff8082169161010090041682565b6040805160ff90931683529015156020830152016101de565b34801561040757600080fd5b506103867f000000000000000000000000000000000000000000000000000000000000000081565b34801561043b57600080fd5b506101f67f000000000000000000000000000000000000000000000000000000000000000081565b610224610d5c565b34801561047757600080fd5b506101f660015481565b34801561048d57600080fd5b507f0000000000000000000000000000000000000000000000000000000000000000610386565b8060015481106104ff576001546040517fdb2815de0000000000000000000000000000000000000000000000000000000081526004016104f691815260200190565b60405180910390fd5b600082815260036020908152604080832033845290915290208054610100900460ff16610558576040517ffd8fd35d00000000000000000000000000000000000000000000000000000000815260040160405180910390fd5b805461ff0019168155600083815260026020819052604082200180549161057e83611aed565b90915550506000838152600260205260408120600101805467016345785d8a000092906105ac908490611b04565b90915550506040513390819060009067016345785d8a00009082818181858883f193505050501580156105e3573d6000803e3d6000fd5b506040516001600160a01b038216907f07c755342db70f3cd9b012463bcfdc68a1009115e2f9910e5562f81d73e5c22590600090a250505050565b7f0000000000000000000000000000000000000000000000000000000000000000336001600160a01b03821614610692576040517f8ba9316e0000000000000000000000000000000000000000000000000000000081523360048201526001600160a01b03821660248201526044016104f6565b61069c8383610ed2565b505050565b600154600081815260036020908152604080832033845282529182902082518084019093525460ff80821684526101009091041615159082018190526107295760405162461bcd60e51b815260206004820152600f60248201527f494e41435449564520706c61796572000000000000000000000000000000000060448201526064016104f6565b600082815260026020818152604092839020835160c081018552815460ff80821683526101008204161580159483019490945262010000810464ffffffffff16958201959095526701000000000000009094046001600160a01b03166060850152600181015460808501529091015460a08301526107e95760405162461bcd60e51b815260206004820152601760248201527f547265617375726520697320696e206d6f76656d656e7400000000000000000060448201526064016104f6565b8151815160ff80821690831603610809576108048533611003565b610955565b6000610815838861111c565b905061082081611256565b156108a657600480546001919060ff60a81b1916600160a81b835b0217905550600480547fffffffffffffffffffffff00000000000000000000000000000000000000000016337fffffffffffffffffffffff00ffffffffffffffffffffffffffffffffffffffff1617600160a01b60ff8416021790556108a0866112b3565b50610953565b6108b1600582611b33565b60ff166000036108d557600480546000919060ff60a81b1916600160a81b8361083b565b60008681526003602090815260408083203380855290835292819020805460ff191660ff861690811790915581519384529183018990528201527f703fd1db84e1e045b3a4e9fed6b5b7e0f18e79143cd4da5dd77e5027f79993179060600160405180910390a18160ff168160ff1603610953576109538633611003565b505b505050505050565b60018054600081815260026020818152604092839020835160c081018552815460ff808216835261010082041615159382019390935262010000830464ffffffffff169481018590526701000000000000009092046001600160a01b0316606083015294850154608082015293015460a08401529091906109ff907f000000000000000000000000000000000000000000000000000000000000000090611b55565b4211610a21576040516326193b7360e11b8152600481018390526024016104f6565b67016345785d8a00008160a00151610a399190611b68565b8160800151610a489190611b04565b60026000610a57856001611b55565b8152602081019190915260400160002060010155610a74826113cd565b60405182907f22ad069010df790b4189611020dc593978605c76ec2dca82a6c137eebaf0724890600090a25050565b336001600160a01b037f00000000000000000000000000000000000000000000000000000000000000001614610b05576040517f1d8c257900000000000000000000000000000000000000000000000000000000815260040160405180910390fd5b6001547f0000000000000000000000000000000000000000000000000000000000000000811015610b65576040517f47d0fed1000000000000000000000000000000000000000000000000000000008152600481018290526024016104f6565b600081815260026020818152604092839020835160c081018552815460ff808216835261010082041615159382019390935262010000830464ffffffffff169481018590526701000000000000009092046001600160a01b03166060830152600181015460808301529091015460a082015290610c03907f000000000000000000000000000000000000000000000000000000000000000090611b55565b4211610c25576040516326193b7360e11b8152600481018390526024016104f6565b6000610c517f000000000000000000000000000000000000000000000000000000000000000084611b04565b9050805b838111610ce45760008181526002602052604090205467010000000000000090046001600160a01b0316151580610c9b5750600081815260026020526040902060010154155b15610cd2576040517f26ef02c700000000000000000000000000000000000000000000000000000000815260040160405180910390fd5b80610cdc81611b7f565b915050610c55565b506080820151604051339082156108fc029083906000818181858888f19350505050158015610d17573d6000803e3d6000fd5b50610d21846113cd565b60405181815233907f65ba53ce31cf13c6964113c44e4c2a546ed8aae0ffde2ea6c3702a3e8a45a49a9060200160405180910390a250505050565b67016345785d8a00003414610d9d576040517f7a07209000000000000000000000000000000000000000000000000000000000815260040160405180910390fd5b600154600090815260036020908152604080832033808552925290912054610100900460ff1615610e05576040517f9e676ee70000000000000000000000000000000000000000000000000000000081526001600160a01b03821660048201526024016104f6565b6001546000908152600260208190526040822001805491610e2583611b7f565b919050555067016345785d8a00006002600060015481526020019081526020016000206001016000828254610e5a9190611b55565b90915550506001805460009081526003602090815260408083206001600160a01b038616808552925291829020805461ff001916610100179055915490517f324cb0062138d65997c86cd3012489ceb351d602f2f55c7408306e8040c79f3f91610ec79190815260200190565b60405180910390a250565b6001546000818152600260205260409020805461ff00191690556005548314610f2a576040517f4ec726c7000000000000000000000000000000000000000000000000000000008152600481018490526024016104f6565b600454600160b01b900460ff1615610f6457610f5f82600081518110610f5257610f52611b98565b6020026020010151611431565b610fc5565b610f8782600081518110610f7a57610f7a611b98565b60200260200101516114bd565b60008181526002602052604090205460045460ff918216600160a01b90910490911603610fc557600454610fc59082906001600160a01b0316611003565b7ffe2e2d779dba245964d4e3ef9b994be63856fd568bf7d3ca9e224755cb1bd54d8383604051610ff6929190611bae565b60405180910390a1505050565b600082815260026020526040812080547fffffffffff0000000000000000000000000000000000000000ffffffffffffff166701000000000000006001600160a01b0385160217815560010154600a9061105e906009611b68565b6110689190611bfe565b6040519091506001600160a01b0383169082156108fc029083906000818181858888f193505050501580156110a1573d6000803e3d6000fd5b5047600260006110b2866001611b55565b815260200190815260200160002060010181905550816001600160a01b03167f2ffb5e4748e43f6ca515f554cade99a469e03fa57973c54c2cb30d8d4cb788d9828560405161110b929190918252602082015260400190565b60405180910390a261069c836113cd565b60008061112a600a85611c12565b90506000611139600a86611b33565b9050600084600381111561114f5761114f611a18565b036111775760ff81161561116d57611168600186611c34565b611170565b60645b925061120d565b600284600381111561118b5761118b611a18565b036111a45760ff82161561116d57611168600a86611c34565b60018460038111156111b8576111b8611a18565b036111d3578060ff1660091461116d57611168856001611c4d565b60038460038111156111e7576111e7611a18565b0361120d578160ff166009146112075761120285600a611c4d565b61120a565b60645b92505b8260ff1660640361124e5783856040517f6f7ff9ff0000000000000000000000000000000000000000000000000000000081526004016104f6929190611c66565b505092915050565b6000606460ff831610611295576040517facdbc25500000000000000000000000000000000000000000000000000000000815260040160405180910390fd5b50600160ff919091161b6c020208828828208a20a08a28ac16151590565b6000818152600260205260408120805461ff001916610100179055805461138c90620186a0907f000000000000000000000000000000000000000000000000000000000000000090600190859061130990611c8c565b80601f016020809104026020016040519081016040528092919081815260200182805461133590611c8c565b80156113825780601f1061135757610100808354040283529160200191611382565b820191906000526020600020905b81548152906001019060200180831161136557829003601f168201915b505050505061151c565b5060058190556040518181529091507f0cd21a41891ff04ecd9a8754bec97e2fb85d2a4e7694329d4dc364c796f23d069060200160405180910390a1919050565b600180549060006113dd83611b7f565b90915550506001546000908152600260205260409020805464ffffffffff4216620100000266ffffffffff0000199091161790556004805460ff60b01b1916600160b01b17905561142d816112b3565b5050565b6004805460ff60b01b19169055600061144b606483611cc6565b600180546000908152600260209081526040808320805460ff191660ff871690811790915584548085529382902090940154815190815291820193909352929350917f5ebe9e4b5ec73754b320dc4b775c3350188dd025d94a21e5dd5a987dba556da291015b60405180910390a25050565b6000600454600160a81b900460ff1660018111156114dd576114dd611a18565b036114ee576114eb81611673565b50565b6001600454600160a81b900460ff16600181111561150e5761150e611a18565b036114eb576114eb8161189a565b6040517f13c34b7f00000000000000000000000000000000000000000000000000000000815263ffffffff80861660048301528316602482015260009081906001600160a01b037f000000000000000000000000000000000000000000000000000000000000000016906313c34b7f90604401602060405180830381865afa1580156115ac573d6000803e3d6000fd5b505050506040513d601f19601f820116820180604052508101906115d09190611cda565b90507f00000000000000000000000000000000000000000000000000000000000000006001600160a01b0316639cfc058e82888888886040518663ffffffff1660e01b81526004016116259493929190611cf3565b60206040518083038185885af1158015611643573d6000803e3d6000fd5b50505050506040513d601f19601f820116820180604052508101906116689190611cda565b915094509492505050565b60015460009081526002602052604090205460ff16611690611901565b60008061169e600a85611c12565b905060006116ad600a86611b33565b905060ff8116156116f1576116c3600186611c34565b84846116ce81611d67565b955060ff16600481106116e3576116e3611b98565b60ff90921660209290920201525b60ff82161561173357611705600a86611c34565b848461171081611d67565b955060ff166004811061172557611725611b98565b60ff90921660209290920201525b8060ff1660091461177757611749856001611c4d565b848461175481611d67565b955060ff166004811061176957611769611b98565b60ff90921660209290920201525b8160ff166009146117bb5761178d85600a611c4d565b848461179881611d67565b955060ff16600481106117ad576117ad611b98565b60ff90921660209290920201525b60008360ff161161180e5760405162461bcd60e51b815260206004820152600e60248201527f4e6f2076616c6964206d6f76657300000000000000000000000000000000000060448201526064016104f6565b60008461181e60ff861689611cc6565b6004811061182e5761182e611b98565b6020908102919091015160018054600090815260028452604090819020805460ff191660ff851690811790915591549051908152919350917fd0c6ead5d9a5593f4bc9066d6c7da575963bb64b25ea289279d6b92d594516cc910160405180910390a250505050505050565b60006118a7606483611cc6565b60018054600090815260026020908152604091829020805460ff191660ff86169081179091559254915191825292935090917fd0c6ead5d9a5593f4bc9066d6c7da575963bb64b25ea289279d6b92d594516cc91016114b1565b60405180608001604052806004906020820280368337509192915050565b60006020828403121561193157600080fd5b5035919050565b634e487b7160e01b600052604160045260246000fd5b6000806040838503121561196157600080fd5b8235915060208084013567ffffffffffffffff8082111561198157600080fd5b818601915086601f83011261199557600080fd5b8135818111156119a7576119a7611938565b8060051b604051601f19603f830116810181811085821117156119cc576119cc611938565b6040529182528482019250838101850191898311156119ea57600080fd5b938501935b82851015611a08578435845293850193928501926119ef565b8096505050505050509250929050565b634e487b7160e01b600052602160045260246000fd5b6001600160a01b038616815260ff8516602082015260a0810160028510611a5757611a57611a18565b6040820194909452911515606083015260809091015292915050565b600060208284031215611a8557600080fd5b813560048110611a9457600080fd5b9392505050565b60008060408385031215611aae57600080fd5b8235915060208301356001600160a01b0381168114611acc57600080fd5b809150509250929050565b634e487b7160e01b600052601160045260246000fd5b600081611afc57611afc611ad7565b506000190190565b81810381811115611b1757611b17611ad7565b92915050565b634e487b7160e01b600052601260045260246000fd5b600060ff831680611b4657611b46611b1d565b8060ff84160691505092915050565b80820180821115611b1757611b17611ad7565b8082028115828204841417611b1757611b17611ad7565b600060018201611b9157611b91611ad7565b5060010190565b634e487b7160e01b600052603260045260246000fd5b60006040820184835260206040602085015281855180845260608601915060208701935060005b81811015611bf157845183529383019391830191600101611bd5565b5090979650505050505050565b600082611c0d57611c0d611b1d565b500490565b600060ff831680611c2557611c25611b1d565b8060ff84160491505092915050565b60ff8281168282160390811115611b1757611b17611ad7565b60ff8181168382160190811115611b1757611b17611ad7565b6040810160048410611c7a57611c7a611a18565b92815260ff9190911660209091015290565b600181811c90821680611ca057607f821691505b602082108103611cc057634e487b7160e01b600052602260045260246000fd5b50919050565b600082611cd557611cd5611b1d565b500690565b600060208284031215611cec57600080fd5b5051919050565b600063ffffffff8087168352602061ffff871660208501528186166040850152608060608501528451915081608085015260005b82811015611d435785810182015185820160a001528101611d27565b5050600060a0828501015260a0601f19601f83011684010191505095945050505050565b600060ff821660ff8103611d7d57611d7d611ad7565b6001019291505056fea264697066735822122015695705aa148d30e1bf1764144bf9cfd7e69a8e1e2545f3ece9b43a2b62163064736f6c63430008180033",
+  "devdoc": {
+    "details": "A game contract where players participate in a treasure hunt, with position moves and treasure location updates.",
+    "kind": "dev",
+    "methods": {
+      "constructor": {
+        "details": "Constructor to initialize the contract with minimum turn duration and expiry duration.",
+        "params": {
+          "_gameDuration": "Duration till the game lasts",
+          "_inactiveGamesWithdrawTVLIndex": "Index count for inactive games for withdrawal of accumulated TVL",
+          "_requestConfirmation": "The number of block confirmations the VRF service will wait to respond.",
+          "_vrfV2PlusWrapper": "Address of chainlink vrfV2PlusWrapper contract on deployment chain"
+        }
+      },
+      "expireCurrentGame()": {
+        "details": "Expire the current game. Emits a {GameExpired} event. Reverts with: - `GameCannotBeExpired` if the current time is less than the game's expiry time."
+      },
+      "participate()": {
+        "details": "Participate in the game by paying the participation fee."
+      },
+      "play(uint8)": {
+        "details": "Allows a player to make a move in the specified direction. The player must wait for their turn before making a move. Updates the player's position and checks if the move results in winning the game. If the player wins, the game is ended; otherwise, the treasure's position is updated. Emits a {PlayerMoved} event when the player makes a move.",
+        "params": {
+          "move": "The direction in which the player wants to move. This should be one of the values from the `Directions` enum."
+        }
+      },
+      "withdrawFunds(uint256)": {
+        "details": "Withdraw participation funds after the game has expired. Requirements: - The current game must be expired. - The caller must have a non-zero participation fee for the expired game. Emits a {FundsWithdrawn} event."
+      },
+      "withdrawInactiveGamesTVL()": {
+        "details": "This function checks for a series of inactive games and allows withdrawal of accumulated TVL"
+      }
+    },
+    "title": "TreasureHunt",
+    "version": 1
+  },
+  "userdoc": {
+    "kind": "user",
+    "methods": {
+      "getBalance()": {
+        "notice": "getBalance returns the native balance of the consumer contract"
+      },
+      "getLinkToken()": {
+        "notice": "getLinkToken returns the link token contract"
+      },
+      "participate()": {
+        "notice": "The participant must send Ether to join the game. If the player has already registered for the current game round, the transaction will revert. Emits a {PlayerRegistered} event."
+      },
+      "withdrawInactiveGamesTVL()": {
+        "notice": "Allows withdrawal of TVL from inactive games"
+      }
+    },
+    "version": 1
+  },
+  "storageLayout": {
+    "storage": [
+      {
+        "astId": 460,
+        "contract": "contracts/TreasureHunt.sol:TreasureHunt",
+        "label": "extraArgs",
+        "offset": 0,
+        "slot": "0",
+        "type": "t_bytes_storage"
+      },
+      {
+        "astId": 470,
+        "contract": "contracts/TreasureHunt.sol:TreasureHunt",
+        "label": "currentGameIndex",
+        "offset": 0,
+        "slot": "1",
+        "type": "t_uint256"
+      },
+      {
+        "astId": 487,
+        "contract": "contracts/TreasureHunt.sol:TreasureHunt",
+        "label": "games",
+        "offset": 0,
+        "slot": "2",
+        "type": "t_mapping(t_uint256,t_struct(Game)438_storage)"
+      },
+      {
+        "astId": 494,
+        "contract": "contracts/TreasureHunt.sol:TreasureHunt",
+        "label": "players",
+        "offset": 0,
+        "slot": "3",
+        "type": "t_mapping(t_uint256,t_mapping(t_address,t_struct(Player)443_storage))"
+      },
+      {
+        "astId": 497,
+        "contract": "contracts/TreasureHunt.sol:TreasureHunt",
+        "label": "request",
+        "offset": 0,
+        "slot": "4",
+        "type": "t_struct(Request)455_storage"
+      }
+    ],
+    "types": {
+      "t_address": {
+        "encoding": "inplace",
+        "label": "address",
+        "numberOfBytes": "20"
+      },
+      "t_bool": {
+        "encoding": "inplace",
+        "label": "bool",
+        "numberOfBytes": "1"
+      },
+      "t_bytes_storage": {
+        "encoding": "bytes",
+        "label": "bytes",
+        "numberOfBytes": "32"
+      },
+      "t_enum(TreasureMove)425": {
+        "encoding": "inplace",
+        "label": "enum TreasureHunt.TreasureMove",
+        "numberOfBytes": "1"
+      },
+      "t_mapping(t_address,t_struct(Player)443_storage)": {
+        "encoding": "mapping",
+        "key": "t_address",
+        "label": "mapping(address => struct TreasureHunt.Player)",
+        "numberOfBytes": "32",
+        "value": "t_struct(Player)443_storage"
+      },
+      "t_mapping(t_uint256,t_mapping(t_address,t_struct(Player)443_storage))": {
+        "encoding": "mapping",
+        "key": "t_uint256",
+        "label": "mapping(uint256 => mapping(address => struct TreasureHunt.Player))",
+        "numberOfBytes": "32",
+        "value": "t_mapping(t_address,t_struct(Player)443_storage)"
+      },
+      "t_mapping(t_uint256,t_struct(Game)438_storage)": {
+        "encoding": "mapping",
+        "key": "t_uint256",
+        "label": "mapping(uint256 => struct TreasureHunt.Game)",
+        "numberOfBytes": "32",
+        "value": "t_struct(Game)438_storage"
+      },
+      "t_struct(Game)438_storage": {
+        "encoding": "inplace",
+        "label": "struct TreasureHunt.Game",
+        "members": [
+          {
+            "astId": 427,
+            "contract": "contracts/TreasureHunt.sol:TreasureHunt",
+            "label": "treasurePosition",
+            "offset": 0,
+            "slot": "0",
+            "type": "t_uint8"
+          },
+          {
+            "astId": 429,
+            "contract": "contracts/TreasureHunt.sol:TreasureHunt",
+            "label": "treasureMoving",
+            "offset": 1,
+            "slot": "0",
+            "type": "t_bool"
+          },
+          {
+            "astId": 431,
+            "contract": "contracts/TreasureHunt.sol:TreasureHunt",
+            "label": "startTime",
+            "offset": 2,
+            "slot": "0",
+            "type": "t_uint40"
+          },
+          {
+            "astId": 433,
+            "contract": "contracts/TreasureHunt.sol:TreasureHunt",
+            "label": "winner",
+            "offset": 7,
+            "slot": "0",
+            "type": "t_address"
+          },
+          {
+            "astId": 435,
+            "contract": "contracts/TreasureHunt.sol:TreasureHunt",
+            "label": "tvl",
+            "offset": 0,
+            "slot": "1",
+            "type": "t_uint256"
+          },
+          {
+            "astId": 437,
+            "contract": "contracts/TreasureHunt.sol:TreasureHunt",
+            "label": "playerCount",
+            "offset": 0,
+            "slot": "2",
+            "type": "t_uint256"
+          }
+        ],
+        "numberOfBytes": "96"
+      },
+      "t_struct(Player)443_storage": {
+        "encoding": "inplace",
+        "label": "struct TreasureHunt.Player",
+        "members": [
+          {
+            "astId": 440,
+            "contract": "contracts/TreasureHunt.sol:TreasureHunt",
+            "label": "position",
+            "offset": 0,
+            "slot": "0",
+            "type": "t_uint8"
+          },
+          {
+            "astId": 442,
+            "contract": "contracts/TreasureHunt.sol:TreasureHunt",
+            "label": "isActive",
+            "offset": 1,
+            "slot": "0",
+            "type": "t_bool"
+          }
+        ],
+        "numberOfBytes": "32"
+      },
+      "t_struct(Request)455_storage": {
+        "encoding": "inplace",
+        "label": "struct TreasureHunt.Request",
+        "members": [
+          {
+            "astId": 445,
+            "contract": "contracts/TreasureHunt.sol:TreasureHunt",
+            "label": "player",
+            "offset": 0,
+            "slot": "0",
+            "type": "t_address"
+          },
+          {
+            "astId": 447,
+            "contract": "contracts/TreasureHunt.sol:TreasureHunt",
+            "label": "newPosition",
+            "offset": 20,
+            "slot": "0",
+            "type": "t_uint8"
+          },
+          {
+            "astId": 450,
+            "contract": "contracts/TreasureHunt.sol:TreasureHunt",
+            "label": "condition",
+            "offset": 21,
+            "slot": "0",
+            "type": "t_enum(TreasureMove)425"
+          },
+          {
+            "astId": 452,
+            "contract": "contracts/TreasureHunt.sol:TreasureHunt",
+            "label": "newGame",
+            "offset": 22,
+            "slot": "0",
+            "type": "t_bool"
+          },
+          {
+            "astId": 454,
+            "contract": "contracts/TreasureHunt.sol:TreasureHunt",
+            "label": "requestId",
+            "offset": 0,
+            "slot": "1",
+            "type": "t_uint256"
+          }
+        ],
+        "numberOfBytes": "64"
+      },
+      "t_uint256": {
+        "encoding": "inplace",
+        "label": "uint256",
+        "numberOfBytes": "32"
+      },
+      "t_uint40": {
+        "encoding": "inplace",
+        "label": "uint40",
+        "numberOfBytes": "5"
+      },
+      "t_uint8": {
+        "encoding": "inplace",
+        "label": "uint8",
+        "numberOfBytes": "1"
+      }
+    }
+  }
+}
